@@ -18,61 +18,35 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
-//todo: might have to not use ObjectSelectionList but a custom class for multiple selections...
 public class LightSelectionList extends ObjectSelectionList<LightEntry> {
     private final ConfigurationScreen parent;
     private HueBridge selectedBridge;
 
-    //todo: maybe use the bridge's list of selected lights itself? with a selectedBridge object
-    //todo: change to a set??????
-    private final List<LightEntry> selected = new ArrayList<>();
-    private LightEntry hovered;
-
-    //todo rename to empty
-    private @Setter String errorMessage = "Select a bridge to view its lights.";
+    private @Setter String emptyMessage = "Select a bridge to view its lights.";
 
     public LightSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, ConfigurationScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
         this.parent = parent;
-        //todo not necessary: you have the parent height just do the math to subtract y and height and you're good
     }
 
-    //todo: maybe use the bridge's list of selected lights itself? with a selectedBridge object
     @Override
     public void setSelected(LightEntry entry) {
         System.out.println(entry);
-        if (selected.contains(entry)) {
-            System.out.println("disabled");
-            selected.remove(entry);
-            selectedBridge.setActiveLight(entry.getLight().ID, false);
-        }
-        else {
-            System.out.println("enabled");
-            selected.add(entry);
-            selectedBridge.setActiveLight(entry.getLight().ID, true);
-        }
-    }
-
-    public void setSelected(String lightId) {
-        Optional<LightEntry> entry = this.children().stream().filter(l -> l.getLight().ID.equals(lightId)).findFirst();
-
-        entry.ifPresent(this::setSelected);
+        selectedBridge.setActiveLight(entry.getLight().getId(), !selectedBridge.getActiveLights()
+                                                                               .contains(entry.getLight()));
     }
 
     @Override
     protected boolean isSelectedItem(int index) {
-        Optional<LightEntry> entry = selected.stream()
-                                             .filter(lightEntry -> lightEntry.getLight().ID.equals(this.children()
-                                                                                                       .get(index)
-                                                                                                       .getLight().ID))
-                                             .findFirst();
+        Optional<HueLight> entry = selectedBridge.getActiveLights().stream()
+                                                 .filter(l -> l.getId().equals(this.children()
+                                                                                   .get(index)
+                                                                                   .getLight().getId()))
+                                                 .findFirst();
         return entry.isPresent();
     }
 
@@ -88,7 +62,6 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
         RenderSystem.setShader(GameRenderer::getPositionTexColorShader);
-        hovered = this.isMouseOver(mouseX, mouseY) ? this.getEntryAtPosition(mouseX, mouseY) : null;
 
         //background
         RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
@@ -313,16 +286,16 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
                     RenderSystem.enableTexture();
                 }
 
-                entry.render(poseStack, i, entryTop, this.getRowLeft(), rowWidth, contentHeight, mouseX, mouseY, Objects.equals(this.hovered, entry), partialTick);
+                entry.render(poseStack, i, entryTop, this.getRowLeft(), rowWidth, contentHeight, mouseX, mouseY, false, partialTick);
             }
         }
     }
 
     @Override
-    protected void renderDecorations(PoseStack poseStack, int mouseX, int mouseY) {
+    protected void renderDecorations(@NotNull PoseStack poseStack, int mouseX, int mouseY) {
         //error message
         //todo: fix this horrible one-liner
-        minecraft.font.draw(poseStack, errorMessage, x0 + (width - minecraft.font.width(errorMessage))/2.0F, y0 + (height - minecraft.font.lineHeight)/2.0F, 0x808080);
+        minecraft.font.draw(poseStack, emptyMessage, x0 + (width - minecraft.font.width(emptyMessage)) / 2.0F, y0 + (height - minecraft.font.lineHeight) / 2.0F, 0x808080);
     }
 
     private int getRowBottom(int index) {
@@ -342,22 +315,20 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
     public void setSelectedBridge(HueBridge bridge) {
         this.selectedBridge = bridge;
         if (!bridge.isComplete()) {
-            errorMessage = "Press \"Connect\" to finish connecting.";
+            emptyMessage = "Press \"Connect\" to finish connecting.";
             return;
         }
 
         if (!bridge.scanLights()) {
-            errorMessage = "There was a problem connecting...";
+            emptyMessage = "There was a problem connecting...";
             return;
         }
 
-        errorMessage = "";
+        emptyMessage = "";
         this.clearEntries();
         for (HueLight light : bridge.connectedLights) {
-
             LightEntry entry = new LightEntry(light);
             this.addEntry(entry);
-            if (light.active) selected.add(entry);
         }
     }
 
@@ -369,7 +340,8 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
                 if (entry.mouseClicked(mouseX, mouseY, button)) {
                     this.setSelected(entry);
 
-                    String[] lightIds = selected.stream().parallel().map(l -> l.getLight().ID).toArray(String[]::new);
+                    String[] lightIds = selectedBridge.getActiveLights().stream().parallel().map(HueLight::getId)
+                                                      .toArray(String[]::new);
                     McHue.BRIDGE_DATA.setPropertyArray(BridgeProperties.CONNECTED_LIGHTS, lightIds);
 
                     return true;

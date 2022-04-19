@@ -11,7 +11,7 @@ import java.net.http.HttpResponse;
 import java.util.Optional;
 
 public class NetworkUtil {
-    private static HttpClient httpClient = HttpClient.newHttpClient();
+    private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Json JSON = Json.json();
 
     public static boolean putJson(String endpoint, String json) {

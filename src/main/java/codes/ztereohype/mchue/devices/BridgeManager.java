@@ -47,36 +47,30 @@ public class BridgeManager {
         }
     }
 
-    //todo: make this not return a bridgeInfo, but make it start actions that will instead set it in the settings and then set a flag or something idk
-    public static Optional<HueBridge> startInitialBridgeConnection(HueBridge bridge) {
+    public static void startInitialBridgeConnection(HueBridge bridge) {
         // Already complete bridge check
-        if (bridge.isComplete()) return Optional.of(bridge);
-
-        if (bridge.getUserId() == null) {
-            McHue.LOGGER.log(Level.INFO, "No id, generating it.");
-            try {
-                bridge.setUserId("mchue#" + InetAddress.getLocalHost().getHostName());
-            } catch (UnknownHostException e) {
-                bridge.setUserId("mchue#unknown");
-            }
-
-
-        }
+        if (bridge.isComplete()) return;
 
         if (bridge.getUsername() == null) {
+            McHue.LOGGER.log(Level.INFO, "No id, generating it.");
+            try {
+                bridge.setUsername("mchue#" + InetAddress.getLocalHost().getHostName());
+            } catch (UnknownHostException e) {
+                bridge.setUsername("mchue#unknown");
+            }
+        }
+
+        if (bridge.getToken() == null) {
             McHue.LOGGER.log(Level.INFO, "No username, generating it.");
 
-            String url = "http://" + bridge.getIp() + "/api";
-            String data = "{\"devicetype\":\"" + bridge.getUserId() + "\"}";
+            String url = "http://" + bridge.getBridgeIp() + "/api";
+            String data = "{\"devicetype\":\"" + bridge.getUsername() + "\"}";
 
             // only valid for 30 attempts
             UsernameCreator uc = new UsernameCreator(url, data, bridge);
 
-            //todo find a better way?
             t = scheduler.scheduleAtFixedRate(uc, 0, DEFAULT_POLL_INTERVAL, TimeUnit.SECONDS);
         }
-
-        return Optional.of(bridge);
     }
 
     private static class UsernameCreator implements Runnable {
@@ -98,25 +92,21 @@ public class BridgeManager {
             // unknown error
             if (usernameAttempt.first().equals(BridgeResponse.FAILURE)) {
                 scheduler.shutdown();
-                //todo: fix these uglynesses (maybe pass some reference to the update location? maybe store it on the connection screen or mchue?
-                if (bridgeConnectionScreen != null) {
-                    bridgeConnectionScreen.setConnectionUpdate(usernameAttempt.second());
-                    bridgeConnectionScreen.connectionComplete();
-                }
+                bridgeConnectionScreen.setConnectionUpdate(usernameAttempt.second());
+                bridgeConnectionScreen.connectionComplete();
                 t.cancel(false);
             }
 
             // success
             if (usernameAttempt.first().equals(BridgeResponse.SUCCESS)) {
                 scheduler.shutdown();
-                bridge.setUsername(usernameAttempt.second());
+                bridge.setToken(usernameAttempt.second());
 
                 //save all info on config
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, bridge.getId());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getIp());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUserId());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getUsername());
-
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, bridge.getBridgeId());
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getBridgeIp());
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUsername());
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getToken());
 
                 if (bridgeConnectionScreen != null) {
                     bridgeConnectionScreen.setConnectionUpdate("Connection completed with Success!");
@@ -141,17 +131,15 @@ public class BridgeManager {
 
             JsonNode parsedResponse = response.get().query("[0]");
             if (parsedResponse.has("success")) {
-                System.out.println("YAY");
                 return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString());
 
             } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
-                System.out.println("butn");
                 return Pair.of(BridgeResponse.PRESS_BUTTON, "Please press the bridge button.");
 
 
             } else {
-                System.out.println("hhhhhhhhhh");
-                return Pair.of(BridgeResponse.FAILURE, "The bridge responded in an unknown way: " + parsedResponse);
+                McHue.LOGGER.log(Level.ERROR, "The bridge responded in an unknown way: " + parsedResponse);
+                return Pair.of(BridgeResponse.FAILURE, "The bridge responded in an unknown way. Check logs for more info.");
             }
         }
     }

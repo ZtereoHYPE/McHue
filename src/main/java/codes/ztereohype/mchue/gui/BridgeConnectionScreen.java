@@ -41,31 +41,20 @@ public class BridgeConnectionScreen extends Screen {
         super.init();
 
         //todo: correct sizes and make button gray while connecting
-        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 - 156,
-                                                             this.height - 28,
-                                                             72,
-                                                             20,
-                                                             new TextComponent("Try Again"),
-                                                             (button) -> {
-                                                                 message = "Press the bridge button...";
-                                                                 startConnection();
-                                                             }));
+        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 - 156, this.height - 28, 72, 20, new TextComponent("Try Again"), (button) -> {
+            message = "Press the bridge button...";
+            startConnection();
+        }));
 
         tryAgainButton.active = false;
 
-        backButton = this.addRenderableWidget(new Button(this.width / 2 + 84,
-                                                         this.height - 28,
-                                                         72,
-                                                         20,
-                                                         new TextComponent("Back"),
-                                                         (button) -> {
-            //todo: make this less ugly of a cancel
+        backButton = this.addRenderableWidget(new Button(this.width / 2 + 84, this.height - 28, 72, 20, new TextComponent("Back"), (button) -> {
+            //todo: make this less ugly of a cancel ????
             BridgeManager.cancelConnection();
             this.minecraft.setScreen(lastScreen);
         }));
 
         startConnection();
-
     }
 
     @Override
@@ -96,7 +85,8 @@ public class BridgeConnectionScreen extends Screen {
         if (connectingBridge.isComplete()) {
             McHue.ACTIVE_BRIDGE = connectingBridge;
             backButton.setMessage(new TextComponent("Done"));
+        } else {
+            tryAgainButton.active = true;
         }
-        else tryAgainButton.active = true;
     }
 }

@@ -46,7 +46,7 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
 
         // title
         Font font = this.minecraft.font;
-        Component name = new TextComponent(light.NAME);
+        Component name = new TextComponent(light.getName());
         this.minecraft.font.draw(poseStack, Language.getInstance()
                                                     .getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
 
@@ -71,7 +71,7 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
         }
 
         // description
-        String summary = "Index: " + light.INDEX + System.lineSeparator() + "ID: " + light.ID;
+        String summary = "Index: " + light.getIndex() + System.lineSeparator() + "ID: " + light.getId();
 //        minecraft.font.draw(poseStack, summary, x + 7 + ICON_SIZE, y + minecraft.font.lineHeight + 2, 0x808080);
         DrawingUtil.drawStrings(this.minecraft, poseStack, summary, x + 7 + ICON_SIZE, y + minecraft.font.lineHeight + 2, rowWidth - 7, 2, 0x808080);
     }

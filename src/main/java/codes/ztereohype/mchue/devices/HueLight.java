@@ -10,19 +10,17 @@ import java.io.IOException;
 // this class will represent a single light that will accept various controls
 public class HueLight {
     //todo change to a getter system
-    public final String ID;
-    public final String INDEX;
-    public final String NAME;
-    public final HueBridge PARENT_BRIDGE;
+    private final @Getter String id;
+    private final @Getter String index;
+    private final @Getter String name;
     private final String ENDPOINT;
     public boolean active = false;
 
     public HueLight(String id, String index, String name, HueBridge parentBridge) {
-        ID = id;
-        INDEX = index;
-        NAME = name;
-        PARENT_BRIDGE = parentBridge;
-        ENDPOINT = "http://" + PARENT_BRIDGE.getIp() + "/api/" + PARENT_BRIDGE.getUsername() + "/lights/" + INDEX + "/state";
+        this.id = id;
+        this.index = index;
+        this.name = name;
+        this.ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getToken() + "/lights/" + this.index + "/state";
     }
 
     public boolean setColour(int rgb) {
@@ -37,7 +35,7 @@ public class HueLight {
         return NetworkUtil.putJson(ENDPOINT, body);
     }
 
-    public boolean power(boolean power) throws IOException, InterruptedException {
+    public boolean power(boolean power) {
         String body = "{\"on\":" + power + "}";
         return NetworkUtil.putJson(ENDPOINT, body);
     }
