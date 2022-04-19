@@ -1,0 +1,80 @@
+plugins {
+	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'maven-publish'
+	id 'io.github.juuxel.loom-quiltflower' version '1.+'
+	id 'org.quiltmc.quilt-mappings-on-loom' version '4.+'
+}
+
+sourceCompatibility = JavaVersion.VERSION_17
+targetCompatibility = JavaVersion.VERSION_17
+
+archivesBaseName = project.archives_base_name
+version = project.mod_version
+group = project.maven_group
+
+repositories {
+	mavenCentral()
+	maven { url "https://maven.parchmentmc.org" }
+	maven { url "https://maven.terraformersmc.com/" }
+	maven { url "https://maven.fabricmc.net/" }
+	maven { url "https://maven.shadew.net/" }
+	maven { url 'https://maven.gegy.dev' }
+	maven { name = "Modrinth"
+			url = "https://api.modrinth.com/maven"
+			content {
+				includeGroup "maven.modrinth"
+			}
+	}
+}
+
+dependencies {
+	// essentials & mappings
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	modImplementation(include(fabricApi.module("fabric-api-base", project.fabric_version)))
+	modImplementation(include(fabricApi.module("fabric-resource-loader-v0", project.fabric_version)))
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	mappings loom.layered {
+		it.parchment("org.parchmentmc.data:parchment-1.18.2:BLEEDING-20220313.132143-1@zip") // https://ldtteam.jfrog.io/ui/native/parchmentmc-public/org/parchmentmc/data/parchment-1.18.1/BLEEDING-SNAPSHOT
+		it.officialMojangMappings {
+			setNameSyntheticMembers(false)
+		}
+	}
+
+	// devenv mods
+	modRuntimeOnly "maven.modrinth:lazydfu:0.1.2"
+	modRuntimeOnly "maven.modrinth:starlight:1.0.2+1.18.2"
+	modRuntimeOnly "maven.modrinth:lithium:mc1.18.2-0.7.9"
+
+	// libraries
+	implementation "net.shadew:json:0.3"
+	implementation "net.shadew:shwutil:1.7.0"
+
+	compileOnly 'org.projectlombok:lombok:1.18.22'
+	annotationProcessor 'org.projectlombok:lombok:1.18.22'
+}
+
+processResources {
+	inputs.property "version", project.version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+}
+
+jar {
+	from("LICENSE") {
+		rename { "${it}_${project.archivesBaseName}"}
+	}
+}
