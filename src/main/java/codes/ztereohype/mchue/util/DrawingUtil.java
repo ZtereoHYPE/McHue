@@ -15,15 +15,10 @@ public class DrawingUtil {
         while (string != null && string.endsWith("\n")) {
             string = string.substring(0, string.length() - 1);
         }
-        List<FormattedText> strings = minecraft.font.getSplitter().splitLines(new TextComponent(string), wrapWidth, Style.EMPTY);
+        List<FormattedText> strings = minecraft.font.getSplitter()
+                                                    .splitLines(new TextComponent(string), wrapWidth, Style.EMPTY);
         for (int i = 0; i < strings.size(); i++) {
-//            if (i >= lines) {
-//                break;
-//            }
             FormattedText renderable = strings.get(i);
-//            if (i == lines - 1 && strings.size() > lines) {
-//                renderable = FormattedText.composite(strings.get(i), FormattedText.of("..."));
-//            }
             FormattedCharSequence line = Language.getInstance().getVisualOrder(renderable);
             //todo: handle RTL languages
             minecraft.font.draw(poseStack, line, x, y + i * minecraft.font.lineHeight, color);

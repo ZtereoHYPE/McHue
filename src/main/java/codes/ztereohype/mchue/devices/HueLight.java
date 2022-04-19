@@ -4,8 +4,6 @@ import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
 import net.shadew.util.misc.ColorUtil;
 
-import java.io.IOException;
-
 
 // this class will represent a single light that will accept various controls
 public class HueLight {

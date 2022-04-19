@@ -27,8 +27,8 @@ public class BridgeManager {
     private static final int DEFAULT_POLL_INTERVAL = 2; //todo: this is a reminder to unhardcode as much as possible
     private static final int MAX_ATTEMPTS = 30;
     private static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
-    private static ScheduledFuture<?> t;
     public static List<HueBridge> localBridges;
+    private static ScheduledFuture<?> t;
 
     // Updates the localBridges list
     public static void scanBridges() {
@@ -37,7 +37,8 @@ public class BridgeManager {
 
             ArrayList<HueBridge> bridgeList = new ArrayList<>();
             for (JsonNode jsonBridge : JSON.parse(response)) {
-                bridgeList.add(new HueBridge(jsonBridge.query("id").asString(), jsonBridge.query("internalipaddress").asString()));
+                bridgeList.add(new HueBridge(jsonBridge.query("id").asString(), jsonBridge.query("internalipaddress")
+                                                                                          .asString()));
             }
 
             localBridges = bridgeList;
@@ -73,6 +74,10 @@ public class BridgeManager {
         }
     }
 
+    public static void cancelConnection() {
+        t.cancel(true);
+    }
+
     private static class UsernameCreator implements Runnable {
         private final String url;
         private final String data;
@@ -84,6 +89,25 @@ public class BridgeManager {
             this.url = url;
             this.data = data;
             this.bridge = bridge;
+        }
+
+        private static Pair<BridgeResponse, String> attemptUsernameCreation(String url, String data) {
+            //todo: add more useful solutions to exceptions eg. "Are you connected to internet?"
+            Optional<JsonNode> response = NetworkUtil.postJson(url, data);
+            if (response.isEmpty()) return Pair.of(BridgeResponse.FAILURE, "Failed sending the request to the bridge");
+
+            JsonNode parsedResponse = response.get().query("[0]");
+            if (parsedResponse.has("success")) {
+                return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString());
+
+            } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
+                return Pair.of(BridgeResponse.PRESS_BUTTON, "Please press the bridge button.");
+
+
+            } else {
+                McHue.LOGGER.log(Level.ERROR, "The bridge responded in an unknown way: " + parsedResponse);
+                return Pair.of(BridgeResponse.FAILURE, "The bridge responded in an unknown way. Check logs for more info.");
+            }
         }
 
         public void run() {
@@ -123,28 +147,5 @@ public class BridgeManager {
             }
             attempt++;
         }
-
-        private static Pair<BridgeResponse, String> attemptUsernameCreation(String url, String data) {
-            //todo: add more useful solutions to exceptions eg. "Are you connected to internet?"
-            Optional<JsonNode> response = NetworkUtil.postJson(url, data);
-            if (response.isEmpty()) return Pair.of(BridgeResponse.FAILURE, "Failed sending the request to the bridge");
-
-            JsonNode parsedResponse = response.get().query("[0]");
-            if (parsedResponse.has("success")) {
-                return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString());
-
-            } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
-                return Pair.of(BridgeResponse.PRESS_BUTTON, "Please press the bridge button.");
-
-
-            } else {
-                McHue.LOGGER.log(Level.ERROR, "The bridge responded in an unknown way: " + parsedResponse);
-                return Pair.of(BridgeResponse.FAILURE, "The bridge responded in an unknown way. Check logs for more info.");
-            }
-        }
-    }
-
-    public static void cancelConnection() {
-        t.cancel(true);
     }
 }

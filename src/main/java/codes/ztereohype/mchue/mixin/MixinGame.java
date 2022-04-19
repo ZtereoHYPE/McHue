@@ -17,10 +17,10 @@ public class MixinGame {
     @Inject(at = @At("HEAD"), method = "onStartGameSession()V")
     public void injectUpdaterStart(CallbackInfo ci) {
         LightColourScheduler.startUpdater(this.minecraft);
-    };
+    }
 
     @Inject(at = @At("HEAD"), method = "onLeaveGameSession()V")
     public void injectUpdaterStop(CallbackInfo ci) {
         LightColourScheduler.stopUpdater();
-    };
+    }
 }

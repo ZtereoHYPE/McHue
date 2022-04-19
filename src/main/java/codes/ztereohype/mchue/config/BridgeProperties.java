@@ -4,7 +4,7 @@ import lombok.Getter;
 
 import java.util.Locale;
 
-public enum BridgeProperties implements PropertiesEnum{
+public enum BridgeProperties implements PropertiesEnum {
     BRIDGE_ID("null", false),
     BRIDGE_IP("null", false),
     DEVICE_INDENTIFIER("null", false),
@@ -19,7 +19,8 @@ public enum BridgeProperties implements PropertiesEnum{
         this.isArray = isArray;
     }
 
-    @Override public String getSettingName() {
+    @Override
+    public String getSettingName() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }

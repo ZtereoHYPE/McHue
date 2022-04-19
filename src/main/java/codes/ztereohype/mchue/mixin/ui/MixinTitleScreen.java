@@ -16,7 +16,8 @@ public class MixinTitleScreen extends Screen {
         super(component);
     }
 
-    @Inject(at = @At("HEAD"), method = "createNormalMenuOptions(II)V") private void createNormalMenuOptions(int y, int spacingY, CallbackInfo callbackInfo) {
+    @Inject(at = @At("HEAD"), method = "createNormalMenuOptions(II)V")
+    private void createNormalMenuOptions(int y, int spacingY, CallbackInfo callbackInfo) {
         codes.ztereohype.mchue.McHue.settingsScreen = new ConfigurationScreen(this);
         this.addRenderableWidget(new Button(50, 50, 150, 20, Component.nullToEmpty("McHue Settings"), button -> this.minecraft.setScreen(codes.ztereohype.mchue.McHue.settingsScreen)));
     }

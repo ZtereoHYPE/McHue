@@ -28,18 +28,21 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         //todo not necessary: you have the parent height just do the math to subtract y and height and you're good
     }
 
-    @Override public void setSelected(BridgeEntry entry) {
+    @Override
+    public void setSelected(BridgeEntry entry) {
         super.setSelected(entry);
 //        parent.
         parent.setSelectedBridgeEntry(entry);
     }
 
     //todo: accessibility
-    @Override public void updateNarration(@NotNull NarrationElementOutput narrationElementOutput) {
+    @Override
+    public void updateNarration(@NotNull NarrationElementOutput narrationElementOutput) {
 
     }
 
-    @Override public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    @Override
+    public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(poseStack);
 
         Tesselator tesselator = Tesselator.getInstance();
@@ -53,19 +56,19 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         float f = 32.0F;
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         bufferBuilder.vertex(this.x0, this.y1, 0.0)
-                     .uv(this.x0 / 32.0F,  (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y1, 0.0)
-                     .uv(this.x1 / 32.0F,  (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y0, 0.0)
-                     .uv(this.x1 / 32.0F,  (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, this.y0, 0.0)
-                     .uv(this.x0 / 32.0F,  (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
                      .color(32, 32, 32, 255)
                      .endVertex();
         tesselator.end();
@@ -89,14 +92,19 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
 
         //top?
         bufferBuilder.vertex(this.x0, this.y0, z).uv(0.0F, this.y0 / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, this.y0, z).uv(this.width / 32.0F, this.y0 / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, 0.0, z).uv(this.width / 32.0F, 0.0F).color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0 + this.width, this.y0, z).uv(this.width / 32.0F, this.y0 / 32.0F)
+                     .color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0 + this.width, 0.0, z).uv(this.width / 32.0F, 0.0F).color(64, 64, 64, 255)
+                     .endVertex();
         bufferBuilder.vertex(this.x0, 0.0, z).uv(0.0F, 0.0F).color(64, 64, 64, 255).endVertex();
 
         //bottom?
-        bufferBuilder.vertex(this.x0, this.y1 + bottomDistance, z).uv(0.0F, (this.y1 + bottomDistance) / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, this.y1 + bottomDistance, z).uv(this.width / 32.0F, (this.y1 + bottomDistance) / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, this.y1, z).uv(this.width / 32.0F, this.y1 / 32.0F).color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0, this.y1 + bottomDistance, z).uv(0.0F, (this.y1 + bottomDistance) / 32.0F)
+                     .color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0 + this.width, this.y1 + bottomDistance, z)
+                     .uv(this.width / 32.0F, (this.y1 + bottomDistance) / 32.0F).color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0 + this.width, this.y1, z).uv(this.width / 32.0F, this.y1 / 32.0F)
+                     .color(64, 64, 64, 255).endVertex();
         bufferBuilder.vertex(this.x0, this.y1, z).uv(0.0F, this.y1 / 32.0F).color(64, 64, 64, 255).endVertex();
         tesselator.end();
 
@@ -105,9 +113,9 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         RenderSystem.disableDepthTest();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA,
-                                       GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
-                                       GlStateManager.SourceFactor.ZERO,
-                                       GlStateManager.DestFactor.ONE);
+                GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA,
+                GlStateManager.SourceFactor.ZERO,
+                GlStateManager.DestFactor.ONE);
         RenderSystem.disableTexture();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         int shadowLength = 4;
@@ -157,7 +165,8 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         RenderSystem.disableBlend();
     }
 
-    @Override protected void renderList(@NotNull PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTick) {
+    @Override
+    protected void renderList(@NotNull PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTick) {
         int listLength = this.getItemCount();
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
@@ -202,15 +211,15 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
                 }
 
                 entry.render(poseStack,
-                             i,
-                             entryTop,
-                             this.getRowLeft(),
-                             rowWidth,
-                             contentHeight,
-                             mouseX,
-                             mouseY,
-                             Objects.equals(this.hovered, entry),
-                             partialTick);
+                        i,
+                        entryTop,
+                        this.getRowLeft(),
+                        rowWidth,
+                        contentHeight,
+                        mouseX,
+                        mouseY,
+                        Objects.equals(this.hovered, entry),
+                        partialTick);
             }
         }
 
@@ -220,15 +229,20 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         return this.getRowTop(index) + this.itemHeight;
     }
 
-    @Override public int getRowWidth() {
+    @Override
+    public int getRowWidth() {
         return this.width - 8;
     }
 
-    @Override protected boolean isFocused() {
+    @Override
+    protected boolean isFocused() {
         return parent.getFocused() == this;
     }
 
-    @Override protected boolean isSelectedItem(int index) {
-        return this.getSelected() != null && Objects.equals(this.getSelected().getBridge().getBridgeId(), this.children().get(index).getBridge().getBridgeId());
+    @Override
+    protected boolean isSelectedItem(int index) {
+        return this.getSelected() != null && Objects.equals(this.getSelected().getBridge()
+                                                                .getBridgeId(), this.children().get(index).getBridge()
+                                                                                    .getBridgeId());
     }
 }

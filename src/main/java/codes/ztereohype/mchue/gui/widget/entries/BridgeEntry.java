@@ -30,7 +30,8 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
         if (this.bridge.passedConnectionTest) connected = true;
     }
 
-    @Override public Component getNarration() {
+    @Override
+    public Component getNarration() {
         //todo: proper accessibility
         return new TextComponent("Bridge");
     }
@@ -49,7 +50,8 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
         // title
         Font font = this.minecraft.font;
         Component name = new TextComponent("Bridge " + (index + 1));
-        this.minecraft.font.draw(poseStack, Language.getInstance().getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
+        this.minecraft.font.draw(poseStack, Language.getInstance()
+                                                    .getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
 
         // label
         if (connected) {

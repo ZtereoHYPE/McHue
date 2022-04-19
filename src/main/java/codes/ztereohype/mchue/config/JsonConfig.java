@@ -45,11 +45,11 @@ Structure:
 
 public class JsonConfig {
     private final String COMMENT;
-    private final Json JSON = Json.json5Builder().formatConfig(FormattingConfig.pretty().useIdentifierKeys(true)).build();
+    private final Json JSON = Json.json5Builder().formatConfig(FormattingConfig.pretty().useIdentifierKeys(true))
+                                  .build();
+    private final Path path;
     private JsonNode root;
     private JsonNode defaultRoot;
-
-    private final Path path;
 
     public JsonConfig(Path path, String comment, String defaultRoot) {
         this.path = path;
@@ -62,7 +62,8 @@ public class JsonConfig {
     }
 
     public <T extends Enum<T> & JsonPropertiesEnum> void setProperty(T propertiesEnum, String value) {
-        if (!root.query(propertiesEnum.getPath()).is(JsonType.STRING) && !root.query(propertiesEnum.getPath()).is(JsonType.NUMBER)) {
+        if (!root.query(propertiesEnum.getPath()).is(JsonType.STRING) && !root.query(propertiesEnum.getPath())
+                                                                              .is(JsonType.NUMBER)) {
             //todo: throw error?
             return;
         }

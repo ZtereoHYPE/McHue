@@ -25,18 +25,19 @@ public class McHue implements ModInitializer {
     public static ConfigurationScreen settingsScreen;
 
     public static Config BRIDGE_DATA = new Config(Paths.get("./.mchue/bridge_data.config"),
-                                                  "McHue config containing sensitive data about the bridge. WARNING: DO NOT SHARE THIS UNDER ANY CIRCUMSTANCES",
-                                                  Map.of(BridgeProperties.BRIDGE_ID.getSettingName(), BridgeProperties.BRIDGE_ID.getDefaultValue(),
-                                                         BridgeProperties.BRIDGE_IP.getSettingName(), BridgeProperties.BRIDGE_IP.getDefaultValue(),
-                                                         BridgeProperties.DEVICE_INDENTIFIER.getSettingName(), BridgeProperties.DEVICE_INDENTIFIER.getDefaultValue(),
-                                                         BridgeProperties.USERNAME.getSettingName(), BridgeProperties.USERNAME.getDefaultValue(),
-                                                         BridgeProperties.CONNECTED_LIGHTS.getSettingName(), BridgeProperties.CONNECTED_LIGHTS.getDefaultValue()));
+            "McHue config containing sensitive data about the bridge. WARNING: DO NOT SHARE THIS UNDER ANY CIRCUMSTANCES",
+            Map.of(BridgeProperties.BRIDGE_ID.getSettingName(), BridgeProperties.BRIDGE_ID.getDefaultValue(),
+                    BridgeProperties.BRIDGE_IP.getSettingName(), BridgeProperties.BRIDGE_IP.getDefaultValue(),
+                    BridgeProperties.DEVICE_INDENTIFIER.getSettingName(), BridgeProperties.DEVICE_INDENTIFIER.getDefaultValue(),
+                    BridgeProperties.USERNAME.getSettingName(), BridgeProperties.USERNAME.getDefaultValue(),
+                    BridgeProperties.CONNECTED_LIGHTS.getSettingName(), BridgeProperties.CONNECTED_LIGHTS.getDefaultValue()));
 
     public static Config SETTINGS_CONFIG = new Config(Paths.get("./config/mchue.config"),
-                                                      "McHue config containing general mod settings",
-                                                      Map.of(ModSettings.IS_ACTIVE.getSettingName(), ModSettings.IS_ACTIVE.getDefaultValue()));
+            "McHue config containing general mod settings",
+            Map.of(ModSettings.IS_ACTIVE.getSettingName(), ModSettings.IS_ACTIVE.getDefaultValue()));
 
-    @Override public void onInitialize() {
+    @Override
+    public void onInitialize() {
         try {
             BRIDGE_DATA.initialise();
             SETTINGS_CONFIG.initialise();
@@ -54,10 +55,12 @@ public class McHue implements ModInitializer {
 
         boolean validSavedBridge = !(Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID), "null")
-                || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME ), "null")
+                || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null"));
 
-        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream().filter(b -> b.getBridgeIp().equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP))).findFirst();
+        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream().filter(b -> b.getBridgeIp()
+                                                                                                       .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
+                                                                                .findFirst();
 
         if (validSavedBridge && savedBridgeFoundLocally.isPresent()) {
             HueBridge connectedBridge = savedBridgeFoundLocally.get();

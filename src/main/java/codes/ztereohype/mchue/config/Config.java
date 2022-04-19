@@ -8,8 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -77,7 +75,8 @@ public class Config {
 
         properties.setProperty(propertiesEnum.getSettingName(), stringifiedValue.toString());
 
-        if (stringifiedValue.isEmpty()) properties.setProperty(propertiesEnum.getSettingName(), propertiesEnum.getDefaultValue());
+        if (stringifiedValue.isEmpty())
+            properties.setProperty(propertiesEnum.getSettingName(), propertiesEnum.getDefaultValue());
 
         save();
     }

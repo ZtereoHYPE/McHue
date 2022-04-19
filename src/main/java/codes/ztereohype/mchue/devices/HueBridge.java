@@ -13,10 +13,10 @@ import java.util.stream.Collectors;
 public class HueBridge {
     private final @Getter String bridgeId;
     private final @Getter String bridgeIp;
-    private @Getter String username;
-    private @Getter String token;
     public boolean passedConnectionTest = false;
     public List<HueLight> connectedLights = new ArrayList<>();
+    private @Getter String username;
+    private @Getter String token;
 
     public HueBridge(String id, String ip) {
         this.bridgeId = id;

@@ -15,7 +15,8 @@ public enum ModSettings implements PropertiesEnum {
         this.isArray = isArray;
     }
 
-    @Override public String getSettingName() {
+    @Override
+    public String getSettingName() {
         return this.name().toLowerCase(Locale.ROOT);
     }
 }

@@ -16,10 +16,10 @@ public class NetworkUtil {
 
     public static boolean putJson(String endpoint, String json) {
         HttpRequest request = HttpRequest.newBuilder()
-                                 .uri(URI.create(endpoint))
-                                 .header("Content-Type", "application/json")
-                                 .PUT(HttpRequest.BodyPublishers.ofString(json))
-                                 .build();
+                                         .uri(URI.create(endpoint))
+                                         .header("Content-Type", "application/json")
+                                         .PUT(HttpRequest.BodyPublishers.ofString(json))
+                                         .build();
 
         try {
             httpClient.send(request, HttpResponse.BodyHandlers.ofString());
@@ -33,10 +33,10 @@ public class NetworkUtil {
 
     public static Optional<JsonNode> postJson(String endpoint, String json) {
         HttpRequest request = HttpRequest.newBuilder()
-                                 .uri(URI.create(endpoint))
-                                 .header("Content-Type", "application/json")
-                                 .POST(HttpRequest.BodyPublishers.ofString(json))
-                                 .build();
+                                         .uri(URI.create(endpoint))
+                                         .header("Content-Type", "application/json")
+                                         .POST(HttpRequest.BodyPublishers.ofString(json))
+                                         .build();
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
