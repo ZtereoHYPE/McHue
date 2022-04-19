@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.AbstractSelectionList;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
@@ -34,11 +35,11 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
     }
 
     //todo: accessibility
-    @Override public void updateNarration(NarrationElementOutput narrationElementOutput) {
+    @Override public void updateNarration(@NotNull NarrationElementOutput narrationElementOutput) {
 
     }
 
-    @Override public void render(PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
+    @Override public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
         this.renderBackground(poseStack);
 
         Tesselator tesselator = Tesselator.getInstance();
@@ -156,7 +157,7 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         RenderSystem.disableBlend();
     }
 
-    @Override protected void renderList(PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTick) {
+    @Override protected void renderList(@NotNull PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTick) {
         int listLength = this.getItemCount();
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
@@ -228,6 +229,6 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
     }
 
     @Override protected boolean isSelectedItem(int index) {
-        return this.getSelected() != null && Objects.equals(this.getSelected().getBridge().getId(), this.children().get(index).getBridge().getId());
+        return this.getSelected() != null && Objects.equals(this.getSelected().getBridge().getBridgeId(), this.children().get(index).getBridge().getBridgeId());
     }
 }

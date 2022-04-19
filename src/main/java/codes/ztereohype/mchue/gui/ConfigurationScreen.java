@@ -1,7 +1,6 @@
 package codes.ztereohype.mchue.gui;
 
 import codes.ztereohype.mchue.McHue;
-import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.BridgeManager;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
@@ -34,7 +33,6 @@ Okay so GUI and UX planning:
  */
 
 
-//todo: rename to remove the mchue
 @Environment(value = EnvType.CLIENT)
 public class ConfigurationScreen extends Screen {
     public final String title = "McHue configuration screen";
@@ -109,13 +107,9 @@ public class ConfigurationScreen extends Screen {
         }
 
         for (HueBridge bridge : BridgeManager.localBridges) {
-            if (McHue.ACTIVE_BRIDGE != null && bridge.getIp().equals(McHue.ACTIVE_BRIDGE.getIp())) continue;
+            if (McHue.ACTIVE_BRIDGE != null && bridge.getBridgeIp().equals(McHue.ACTIVE_BRIDGE.getBridgeIp())) continue;
             bridgeSelectionList.children().add(new BridgeEntry(bridge, bridgeSelectionList));
         }
-
-//        for (String lightId : McHue.BRIDGE_DATA.getPropertyArray(BridgeProperties.CONNECTED_LIGHTS)) {
-//            lightSelectionList.setSelected(lightId);
-//        }
     }
 
     @Override
@@ -152,6 +146,7 @@ public class ConfigurationScreen extends Screen {
 
     private void disconnectBridge() {
         //todo: find a way to unify all of this bullshit im sick and tired of losing it all around
+        // also, this is broken and doesnt work
         selectedBridgeEntry.setConnected(false);
         setSelectedBridgeEntry(null);
         McHue.ACTIVE_BRIDGE = null;

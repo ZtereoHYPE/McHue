@@ -57,13 +57,13 @@ public class McHue implements ModInitializer {
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME ), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null"));
 
-        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream().filter(b -> b.getIp().equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP))).findFirst();
+        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream().filter(b -> b.getBridgeIp().equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP))).findFirst();
 
         if (validSavedBridge && savedBridgeFoundLocally.isPresent()) {
             HueBridge connectedBridge = savedBridgeFoundLocally.get();
 
-            connectedBridge.setUserId(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
-            connectedBridge.setUsername(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
+            connectedBridge.setUsername(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
+            connectedBridge.setToken(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
 
             // debug stuff
 //            connectedBridge.setActiveLight("00:17:88:01:04:06:45:68-0b", true);
