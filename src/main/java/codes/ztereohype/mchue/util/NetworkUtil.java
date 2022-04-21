@@ -22,7 +22,10 @@ public class NetworkUtil {
                                          .build();
 
         try {
-            httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+            var req = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+
+            //todo handle errors better from the body lol
+//            System.out.println(req.statusCode() + " " + req.body());
             return true;
         } catch (IOException | InterruptedException e) {
             e.printStackTrace();

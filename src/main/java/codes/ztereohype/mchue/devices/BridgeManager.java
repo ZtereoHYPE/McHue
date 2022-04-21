@@ -2,6 +2,7 @@ package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
+import codes.ztereohype.mchue.devices.responses.BridgeResponse;
 import codes.ztereohype.mchue.gui.BridgeConnectionScreen;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import net.shadew.json.IncorrectTypeException;

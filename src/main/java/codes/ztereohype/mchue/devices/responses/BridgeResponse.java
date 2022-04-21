@@ -1,4 +1,4 @@
-package codes.ztereohype.mchue.devices;
+package codes.ztereohype.mchue.devices.responses;
 
 public enum BridgeResponse {
     SUCCESS,
