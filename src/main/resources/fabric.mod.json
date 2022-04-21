@@ -11,7 +11,7 @@
     "sources": "TBA"
   },
   "license": "CC0-1.0",
-  "icon": "bridge.png",
+  "icon": "assets/mchue/textures/gui/bridge.png",
   "environment": "*",
   "entrypoints": {
     "main": [
