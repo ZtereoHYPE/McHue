@@ -6,10 +6,10 @@
   "mixins": [],
   "client": [
     "MixinGame",
-    "ui.MixinTitleScreen"
+    "ui.MixinTitleScreen",
+    "LightTextureAccessor"
   ],
-  "server": [
-  ],
+  "server": [],
   "injectors": {
     "defaultRequire": 1
   }
