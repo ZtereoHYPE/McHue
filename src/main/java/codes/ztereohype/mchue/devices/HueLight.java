@@ -18,6 +18,8 @@ public class HueLight {
     private final String GET_ENDPOINT;
     public boolean active = false;
 
+    private LightState lastState;
+
     public HueLight(String id, String index, String name, HueBridge parentBridge) {
         this.id = id;
         this.index = index;
@@ -26,8 +28,10 @@ public class HueLight {
         this.GET_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getToken() + "/lights/" + this.index;
     }
 
-    //todo: change to use states n stuff and remove power
     public boolean setColour(LightState colour) {
+        if (colour.equals(lastState)) return true;
+        lastState = colour;
+
         String body = "{\"on\":" + colour.state() + ", \"sat\":" + colour.saturation() + ", \"bri\":" + colour.brightness() + ",\"hue\":" + colour.hue() + "}";
         return NetworkUtil.putJson(POST_ENDPOINT, body);
     }
