@@ -3,7 +3,6 @@ package codes.ztereohype.mchue.devices;
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.responses.LightState;
-import codes.ztereohype.mchue.util.MyColourUtil;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
 import net.shadew.json.JsonNode;
@@ -82,9 +81,9 @@ public class HueBridge {
         return connectedLights.stream().filter(l -> l.active).collect(Collectors.toSet());
     }
 
-    public void streamColour(int rgb) {
+    public void streamColour(LightState colour) {
         for (HueLight light : connectedLights.stream().filter(l -> l.active).toArray(HueLight[]::new)) {
-            LightState colour = MyColourUtil.getColour(rgb);
+//            LightState colour = MyColourUtil.getColour(rgb);
             light.setColour(colour);
         }
     }

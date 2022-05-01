@@ -5,9 +5,9 @@
   "compatibilityLevel": "JAVA_17",
   "mixins": [],
   "client": [
+    "LightTextureAccessor",
     "MixinGame",
-    "ui.MixinTitleScreen",
-    "LightTextureAccessor"
+    "ui.MixinTitleScreen"
   ],
   "server": [],
   "injectors": {

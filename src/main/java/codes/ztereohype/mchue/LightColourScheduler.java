@@ -17,10 +17,7 @@ public class LightColourScheduler {
     private static ColourGrabber cg;
 
     private static void updateColour() {
-        // TODO: make this safer
-        int biomeName = cg.getBiome();
-        //todo: hahahhaha this is shit lol
-        McHue.ACTIVE_BRIDGE.streamColour(biomeName);
+        McHue.ACTIVE_BRIDGE.streamColour(cg.getColour());
     }
 
     public static void startUpdater(Minecraft minecraft) {
