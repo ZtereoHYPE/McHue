@@ -6,6 +6,7 @@ import codes.ztereohype.mchue.config.ModSettings;
 import codes.ztereohype.mchue.devices.BridgeManager;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.gui.ConfigurationScreen;
+import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
-public class McHue implements ModInitializer {
+public class McHue implements ClientModInitializer {
     public static final Logger LOGGER = LogManager.getLogger("mchue");
     public static final String MOD_ID = "mchue";
 
@@ -37,7 +38,7 @@ public class McHue implements ModInitializer {
             Map.of(ModSettings.IS_ACTIVE.getSettingName(), ModSettings.IS_ACTIVE.getDefaultValue()));
 
     @Override
-    public void onInitialize() {
+    public void onInitializeClient() {
         try {
             BRIDGE_DATA.initialise();
             SETTINGS_CONFIG.initialise();
