@@ -2,14 +2,16 @@ package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
-import codes.ztereohype.mchue.devices.responses.BridgeResponse;
-import codes.ztereohype.mchue.gui.BridgeConnectionScreen;
+import codes.ztereohype.mchue.devices.interfaces.BridgeResponse;
+import codes.ztereohype.mchue.gui.screens.BridgeConnectionScreen;
 import codes.ztereohype.mchue.util.NetworkUtil;
+import it.unimi.dsi.fastutil.Pair;
 import net.shadew.json.IncorrectTypeException;
 import net.shadew.json.Json;
 import net.shadew.json.JsonNode;
-import net.shadew.util.data.Pair;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -25,8 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 public class BridgeManager {
     public static final Json JSON = Json.json();
-    private static final int DEFAULT_POLL_INTERVAL = 2; //todo: this is a reminder to unhardcode as much as possible
-    private static final int MAX_ATTEMPTS = 30;
+    private static final int DEFAULT_POLL_INTERVAL = 1; //todo: this is a reminder to unhardcode as much as possible
+    private static final int MAX_ATTEMPTS = 60;
+    private static final Logger LOGGER = LogManager.getLogger("BridgeManager");
     private static final ScheduledExecutorService scheduler = new ScheduledThreadPoolExecutor(1);
     public static List<HueBridge> localBridges;
     private static ScheduledFuture<?> t;
@@ -92,7 +95,7 @@ public class BridgeManager {
             this.bridge = bridge;
         }
 
-        private static Pair<BridgeResponse, String> attemptUsernameCreation(String url, String data) {
+        private Pair<BridgeResponse, String> attemptUsernameCreation(String url, String data) {
             //todo: add more useful solutions to exceptions eg. "Are you connected to internet?"
             Optional<JsonNode> response = NetworkUtil.postJson(url, data);
             if (response.isEmpty()) return Pair.of(BridgeResponse.FAILURE, "Failed sending the request to the bridge");
@@ -102,50 +105,51 @@ public class BridgeManager {
                 return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString());
 
             } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
-                return Pair.of(BridgeResponse.PRESS_BUTTON, "Please press the bridge button.");
-
+                return Pair.of(BridgeResponse.PRESS_BUTTON, String.valueOf(DEFAULT_POLL_INTERVAL * (MAX_ATTEMPTS - attempt)));
 
             } else {
-                McHue.LOGGER.log(Level.ERROR, "The bridge responded in an unknown way: " + parsedResponse);
+                LOGGER.log(Level.ERROR, "The bridge responded in an unknown way: " + parsedResponse);
                 return Pair.of(BridgeResponse.FAILURE, "The bridge responded in an unknown way. Check logs for more info.");
             }
         }
 
         public void run() {
             Pair<BridgeResponse, String> usernameAttempt = attemptUsernameCreation(url, data);
-
-            // unknown error
-            if (usernameAttempt.first().equals(BridgeResponse.FAILURE)) {
-                scheduler.shutdown();
-                bridgeConnectionScreen.setConnectionUpdate(usernameAttempt.second());
-                bridgeConnectionScreen.connectionComplete();
-                t.cancel(false);
-            }
-
-            // success
-            if (usernameAttempt.first().equals(BridgeResponse.SUCCESS)) {
-                scheduler.shutdown();
-                bridge.setToken(usernameAttempt.second());
-
-                //save all info on config
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, bridge.getBridgeId());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getBridgeIp());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUsername());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getToken());
-
-                if (bridgeConnectionScreen != null) {
-                    bridgeConnectionScreen.setConnectionUpdate("Connection completed with Success!");
-                    bridgeConnectionScreen.connectionComplete();
-                }
-            }
+            //todo: is this assertion correct?
+            assert bridgeConnectionScreen != null;
 
             if (attempt >= MAX_ATTEMPTS) {
+                bridgeConnectionScreen.setSubtitle("The button was not pressed in 60 seconds.");
+                bridgeConnectionScreen.setCountdown("You can press Try Again to... try again.");
+
+                bridgeConnectionScreen.connectionComplete();
                 t.cancel(true);
-                if (bridgeConnectionScreen != null) {
-                    bridgeConnectionScreen.setConnectionUpdate("The button was not pressed in 60 seconds.");
+
+            } else switch (usernameAttempt.first()) {
+                case FAILURE -> {
+                    bridgeConnectionScreen.setSubtitle(usernameAttempt.second());
+                    bridgeConnectionScreen.setCountdown("");
+                    bridgeConnectionScreen.connectionComplete();
+
+                    scheduler.shutdown();
+                    t.cancel(false);
+                }
+                case SUCCESS -> {
+                    scheduler.shutdown();
+                    bridge.setToken(usernameAttempt.second());
+
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, bridge.getBridgeId());
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getBridgeIp());
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUsername());
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getToken());
+
+                    bridgeConnectionScreen.setSubtitle("Connection completed with Success!");
+                    bridgeConnectionScreen.setCountdown("You may go back to the previous screen.");
                     bridgeConnectionScreen.connectionComplete();
                 }
+                case PRESS_BUTTON -> bridgeConnectionScreen.setCountdown(usernameAttempt.second() + "s remaining...");
             }
+
             attempt++;
         }
     }
