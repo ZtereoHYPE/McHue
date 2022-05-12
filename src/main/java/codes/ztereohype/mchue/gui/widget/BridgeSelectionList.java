@@ -1,6 +1,6 @@
 package codes.ztereohype.mchue.gui.widget;
 
-import codes.ztereohype.mchue.gui.ConfigurationScreen;
+import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
 import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -16,11 +16,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
-    private final ConfigurationScreen parent;
+    private final LightConfigurationScreen parent;
 
     private BridgeEntry hovered;
 
-    public BridgeSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, ConfigurationScreen parent) {
+    public BridgeSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightConfigurationScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
@@ -56,19 +56,19 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         float f = 32.0F;
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         bufferBuilder.vertex(this.x0, this.y1, 0.0)
-                     .uv(this.x0 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / f, (this.y1 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y1, 0.0)
-                     .uv(this.x1 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / f, (this.y1 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y0, 0.0)
-                     .uv(this.x1 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / f, (this.y0 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, this.y0, 0.0)
-                     .uv(this.x0 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / f, (this.y0 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         tesselator.end();
@@ -92,20 +92,20 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
 
         //top?
         bufferBuilder.vertex(this.x0, this.y0, z).uv(0.0F, this.y0 / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, this.y0, z).uv(this.width / 32.0F, this.y0 / 32.0F)
+        bufferBuilder.vertex(this.x0 + this.width, this.y0, z).uv(this.width / f, this.y0 / f)
                      .color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, 0.0, z).uv(this.width / 32.0F, 0.0F).color(64, 64, 64, 255)
+        bufferBuilder.vertex(this.x0 + this.width, 0.0, z).uv(this.width / f, 0.0F).color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, 0.0, z).uv(0.0F, 0.0F).color(64, 64, 64, 255).endVertex();
 
         //bottom?
-        bufferBuilder.vertex(this.x0, this.y1 + bottomDistance, z).uv(0.0F, (this.y1 + bottomDistance) / 32.0F)
+        bufferBuilder.vertex(this.x0, this.y1 + bottomDistance, z).uv(0.0F, (this.y1 + bottomDistance) / f)
                      .color(64, 64, 64, 255).endVertex();
         bufferBuilder.vertex(this.x0 + this.width, this.y1 + bottomDistance, z)
-                     .uv(this.width / 32.0F, (this.y1 + bottomDistance) / 32.0F).color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0 + this.width, this.y1, z).uv(this.width / 32.0F, this.y1 / 32.0F)
+                     .uv(this.width / f, (this.y1 + bottomDistance) / f).color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0 + this.width, this.y1, z).uv(this.width / f, this.y1 / f)
                      .color(64, 64, 64, 255).endVertex();
-        bufferBuilder.vertex(this.x0, this.y1, z).uv(0.0F, this.y1 / 32.0F).color(64, 64, 64, 255).endVertex();
+        bufferBuilder.vertex(this.x0, this.y1, z).uv(0.0F, this.y1 / f).color(64, 64, 64, 255).endVertex();
         tesselator.end();
 
         // Inner shadows

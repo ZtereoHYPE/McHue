@@ -1,8 +1,8 @@
 package codes.ztereohype.mchue;
 
-import codes.ztereohype.mchue.devices.responses.LightState;
+import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.mixin.LightTextureAccessor;
-import codes.ztereohype.mchue.util.MyColourUtil;
+import codes.ztereohype.mchue.util.ColourUtil;
 import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
@@ -21,15 +21,15 @@ public class ColourGrabber {
         return new BlockPos(minecraft.player.getEyePosition());
     }
 
-    public int getGrassBiomeBlend() {
-        return minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.GRASS_COLOR_RESOLVER);
+    public LightState getGrassBiomeBlend() {
+        return new LightState(minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.GRASS_COLOR_RESOLVER));
     }
 
-    public int getWaterBiomeBlend() {
-        return minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.WATER_COLOR_RESOLVER);
+    public LightState getWaterBiomeBlend() {
+        return new LightState(minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.WATER_COLOR_RESOLVER));
     }
 
-    public int getLightMultiplier() {
+    public LightState getLightMultiplier() {
         Level clientLevel = this.minecraft.level;
         BlockPos playerLocation = getPlayerLocation();
 
@@ -44,10 +44,10 @@ public class ColourGrabber {
         int g = (bgr >> 8) & 0xFF;
         int r = bgr & 0xFF;
 
-        return (r << 16) | (g << 8) | b;
+        return new LightState(r, g, b);
     }
 
-    public int getOverworldColour() {
+    public LightState getOverworldColour() {
         if (minecraft.player.isUnderWater()) {
             return getWaterBiomeBlend();
         } else {
@@ -55,8 +55,8 @@ public class ColourGrabber {
         }
     }
 
-    public int getNetherColour() {
-        return minecraft.level.getBiomeManager().getBiome(getPlayerLocation()).value().getFogColor();
+    public LightState getNetherColour() {
+        return new LightState(minecraft.level.getBiomeManager().getBiome(getPlayerLocation()).value().getFogColor());
     }
 
     public LightState getColour() {
@@ -64,9 +64,9 @@ public class ColourGrabber {
         LightState colour;
 
         if (minecraft.player.level.dimension() == Level.NETHER) {
-            colour = MyColourUtil.getLightState(MyColourUtil.blendLightColour(getNetherColour(), getLightMultiplier(), 0.3F, 1.4F));
+            colour = ColourUtil.blendLightColour(getNetherColour(), getLightMultiplier(), 0.3F, 1.4F);
         } else {
-            colour = MyColourUtil.getLightState(MyColourUtil.blendLightColour(getOverworldColour(), getLightMultiplier(), 1F, 0.9F));
+            colour = ColourUtil.blendLightColour(getOverworldColour(), getLightMultiplier(), 0.7F, 0.9F);
         }
 
         return colour;

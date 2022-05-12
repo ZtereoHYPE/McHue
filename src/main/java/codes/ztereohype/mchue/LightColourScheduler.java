@@ -1,7 +1,7 @@
 package codes.ztereohype.mchue;
 
 import codes.ztereohype.mchue.devices.HueLight;
-import codes.ztereohype.mchue.devices.responses.LightState;
+import codes.ztereohype.mchue.devices.interfaces.LightState;
 import net.minecraft.client.Minecraft;
 import org.apache.logging.log4j.Level;
 
@@ -17,13 +17,13 @@ public class LightColourScheduler {
     private static ColourGrabber cg;
 
     private static void updateColour() {
-        McHue.ACTIVE_BRIDGE.streamColour(cg.getColour());
+        McHue.activeBridge.streamColour(cg.getColour());
     }
 
     public static void startUpdater(Minecraft minecraft) {
-        if (McHue.ACTIVE_BRIDGE == null) return;
+        if (McHue.activeBridge == null) return;
 
-        for (HueLight activeLight : McHue.ACTIVE_BRIDGE.getActiveLights()) {
+        for (HueLight activeLight : McHue.activeBridge.getActiveLights()) {
             previousColours.put(activeLight, activeLight.getState());
         }
 

@@ -1,4 +1,4 @@
-package codes.ztereohype.mchue.gui;
+package codes.ztereohype.mchue.gui.screens;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.devices.BridgeManager;
@@ -15,26 +15,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 
-/*
-Okay so GUI and UX planning:
-- By default, on launch, the mod loads and connects to the main bridge that will be decided as such by the SelectedBridgeId
-  A SMALL TEST HAS TO BE RAN, otherwise the bridge will be disconnected
-    - A lack of SelectedBridgeId will cause the user to be directly taken to a [looking for bridge] screen with the scan already started and a list showing asap
-- Opening the screen will perform a network scan show the user a list of with on top the connected bridge (with a [selected] tag) and the others below
-- Pressing Locate Bridge(s) will add to the list newly found bridges a [new] icon/tag
-- doubleclicking on any of the bridges of the list will actually connect to the bridge, wether it's new and thus needs
-  to go thru all of the connection steps, or it's already known
-    - After each connection A SMALL TEST HAS TO BE RAN, otherwise the bridge will be disconnected
-- The user will be prompted to connect with a toast on main menu or something when no main bridge is selected.
-- will be half bridge (with on top a separated box for the connected one) list half lights list
-- Clicking on the lights selects them (blinking them) and clicking again unselects them.
-- Buttons on the bottom will be Re-Scan, Connect, Disconnect, Back. --> Back turns into Done when one or more working lights are selected!
-- on top of each lists a short instruction will be provided (click to select the bridge) (click on one or more lights to connect or disconnect them)
- */
-
-
 @Environment(value = EnvType.CLIENT)
-public class ConfigurationScreen extends Screen {
+public class LightConfigurationScreen extends Screen {
     public final String title = "McHue configuration screen";
     private final Screen lastScreen;
     public BridgeConnectionScreen bridgeConnectionScreen;
@@ -42,7 +24,7 @@ public class ConfigurationScreen extends Screen {
     private LightSelectionList lightSelectionList;
     private BridgeEntry selectedBridgeEntry;
 
-    public ConfigurationScreen(Screen lastScreen) {
+    public LightConfigurationScreen(Screen lastScreen) {
         super(Component.nullToEmpty("McHue configuration screen"));
         this.lastScreen = lastScreen;
     }
@@ -101,13 +83,16 @@ public class ConfigurationScreen extends Screen {
                 new TextComponent("Done"),
                 (button) -> this.minecraft.setScreen(lastScreen)));
 
-        // todo: maybe do something with uh um yeah no this is very fucked shittttt
-        if (McHue.ACTIVE_BRIDGE != null) {
-            bridgeSelectionList.children().add(new BridgeEntry(McHue.ACTIVE_BRIDGE, bridgeSelectionList));
+        // todo: maybe do something with uh um yeah no this is very bad
+        if (McHue.activeBridge != null) {
+            BridgeEntry entry = new BridgeEntry(McHue.activeBridge, bridgeSelectionList);
+            bridgeSelectionList.children().add(entry);
+            bridgeSelectionList.setSelected(entry);
+            lightSelectionList.setSelectedBridge(entry.getBridge());
         }
 
         for (HueBridge bridge : BridgeManager.localBridges) {
-            if (McHue.ACTIVE_BRIDGE != null && bridge.getBridgeIp().equals(McHue.ACTIVE_BRIDGE.getBridgeIp())) continue;
+            if (McHue.activeBridge != null && bridge.getBridgeIp().equals(McHue.activeBridge.getBridgeIp())) continue;
             bridgeSelectionList.children().add(new BridgeEntry(bridge, bridgeSelectionList));
         }
     }
@@ -136,7 +121,7 @@ public class ConfigurationScreen extends Screen {
     private void connectBridge() {
         //todo: yeha
         if (selectedBridgeEntry.getBridge().passedConnectionTest) {
-            McHue.ACTIVE_BRIDGE = selectedBridgeEntry.getBridge();
+            McHue.activeBridge = selectedBridgeEntry.getBridge();
             selectedBridgeEntry.setConnected(true);
         } else {
             this.bridgeConnectionScreen = new BridgeConnectionScreen(this, selectedBridgeEntry);
@@ -145,11 +130,11 @@ public class ConfigurationScreen extends Screen {
     }
 
     private void disconnectBridge() {
-        //todo: find a way to unify all of this bullshit im sick and tired of losing it all around
+        //todo: find a way to unify all of this stuff im sick and tired of losing it all around
         // also, this is broken and doesnt work
         selectedBridgeEntry.setConnected(false);
         setSelectedBridgeEntry(null);
-        McHue.ACTIVE_BRIDGE = null;
+        McHue.activeBridge = null;
     }
 
     public void setSelectedBridgeEntry(BridgeEntry entry) {

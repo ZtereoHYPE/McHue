@@ -75,9 +75,7 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
 
         // description
         String summary = "IP: " + bridge.getBridgeIp() + System.lineSeparator() + "ID: " + bridge.getBridgeId();
-
         DrawingUtil.drawStrings(this.minecraft, poseStack, summary, x + 7 + ICON_SIZE, y + minecraft.font.lineHeight + 2, rowWidth - 7, 2, 0x808080);
-//        minecraft.font.draw(poseStack, summary, x, y, 0x808080); //todo: unhardcode
     }
 
     @Override

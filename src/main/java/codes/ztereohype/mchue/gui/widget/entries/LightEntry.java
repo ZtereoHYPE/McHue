@@ -2,6 +2,7 @@ package codes.ztereohype.mchue.gui.widget.entries;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.devices.HueLight;
+import codes.ztereohype.mchue.gui.widget.LightSelectionList;
 import codes.ztereohype.mchue.util.DrawingUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -20,10 +21,11 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final @Getter HueLight light;
     private final ResourceLocation BRIDGE_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/lightbulb.png");
-    public boolean selected;
+    private final LightSelectionList parent;
 
-    public LightEntry(HueLight light) {
+    public LightEntry(HueLight light, LightSelectionList parent) {
         this.light = light;
+        this.parent = parent;
     }
 
     //todo
@@ -34,7 +36,6 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
 
     @Override
     public void render(@NotNull PoseStack poseStack, int index, int y, int x, int rowWidth, int rowHeight, int mouseX, int mouseY, boolean isHovered, float delta) {
-
         int ICON_SIZE = 32;
 
         // icon
@@ -51,12 +52,12 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
                                                     .getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
 
         // label
-        if (selected) {
+        if (parent.isSelectedItem(index)) {
             String labelContent = "Selected";
             int labelWidth = font.width(labelContent) + 6;
             int labelX = x + 5 + ICON_SIZE + font.width(name);
-            int outlineColor = 0xff009933;
-            int backgroundColor = 0xff115a24;
+            int outlineColor = 0xff004499;
+            int backgroundColor = 0xff122f61;
             int textColor = 0xffffff;
 
             //outlines
@@ -72,7 +73,6 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
 
         // description
         String summary = "Index: " + light.getIndex() + System.lineSeparator() + "ID: " + light.getId();
-//        minecraft.font.draw(poseStack, summary, x + 7 + ICON_SIZE, y + minecraft.font.lineHeight + 2, 0x808080);
         DrawingUtil.drawStrings(this.minecraft, poseStack, summary, x + 7 + ICON_SIZE, y + minecraft.font.lineHeight + 2, rowWidth - 7, 2, 0x808080);
     }
 

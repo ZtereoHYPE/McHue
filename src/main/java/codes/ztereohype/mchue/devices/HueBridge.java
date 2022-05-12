@@ -2,10 +2,11 @@ package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
-import codes.ztereohype.mchue.devices.responses.LightState;
+import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
 import net.shadew.json.JsonNode;
+import net.shadew.json.JsonPath;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -18,6 +19,9 @@ public class HueBridge {
     public List<HueLight> connectedLights = new ArrayList<>();
     private @Getter String username;
     private @Getter String token;
+
+    private final JsonPath NAME_PATH = JsonPath.parse("name");
+    private final JsonPath ID_PATH = JsonPath.parse("uniqueid");
 
     public HueBridge(String id, String ip) {
         this.bridgeId = id;
@@ -54,15 +58,14 @@ public class HueBridge {
 //        connectedLights.clear();
         for (String lightKey : response.get().keySet()) {
             JsonNode lightJson = response.get().get(lightKey);
-            String id = lightJson.query("uniqueid").asString();
-            String name = lightJson.query("name")
+            String id = lightJson.query(ID_PATH).asString();
+            String name = lightJson.query(NAME_PATH)
                                    .asString(); //node: maybe append model or room? or add it in the class?
             HueLight light = new HueLight(id, lightKey, name, this);
 
             //todo move out of here????
             if (Arrays.asList(McHue.BRIDGE_DATA.getPropertyArray(BridgeProperties.CONNECTED_LIGHTS)).contains(id))
                 light.active = true;
-            //todo: use room instead of ID in the UI; much more intuitive oh no its in the
 
             //todo: SINCE WHEN IS ANYMATCH A THING; INSTANTLY REPLACE IT IN ALL STEREAMSS
             if (connectedLights.stream().noneMatch(l -> l.getId().equals(id))) connectedLights.add(light);
@@ -81,9 +84,9 @@ public class HueBridge {
         return connectedLights.stream().filter(l -> l.active).collect(Collectors.toSet());
     }
 
+    //todo: make this have 2 branches: V1 and V2 (that uses the streaming api) (can both be used at the same time maybe??)
     public void streamColour(LightState colour) {
         for (HueLight light : connectedLights.stream().filter(l -> l.active).toArray(HueLight[]::new)) {
-//            LightState colour = MyColourUtil.getColour(rgb);
             light.setColour(colour);
         }
     }

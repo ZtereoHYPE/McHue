@@ -4,7 +4,7 @@ import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.devices.HueLight;
-import codes.ztereohype.mchue.gui.ConfigurationScreen;
+import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
 import codes.ztereohype.mchue.gui.widget.entries.LightEntry;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,12 +21,12 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class LightSelectionList extends ObjectSelectionList<LightEntry> {
-    private final ConfigurationScreen parent;
+    private final LightConfigurationScreen parent;
     private HueBridge selectedBridge;
 
     private @Setter String emptyMessage = "Select a bridge to view its lights.";
 
-    public LightSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, ConfigurationScreen parent) {
+    public LightSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightConfigurationScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
@@ -35,13 +35,12 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
 
     @Override
     public void setSelected(LightEntry entry) {
-        System.out.println(entry);
-        selectedBridge.setActiveLight(entry.getLight().getId(), !selectedBridge.getActiveLights()
-                                                                               .contains(entry.getLight()));
+        boolean selected = !selectedBridge.getActiveLights().contains(entry.getLight());
+        selectedBridge.setActiveLight(entry.getLight().getId(), selected);
     }
 
     @Override
-    protected boolean isSelectedItem(int index) {
+    public boolean isSelectedItem(int index) {
         Optional<HueLight> entry = selectedBridge.getActiveLights().stream()
                                                  .filter(l -> l.getId().equals(this.children()
                                                                                    .get(index)
@@ -66,22 +65,22 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
         //background
         RenderSystem.setShaderTexture(0, GuiComponent.BACKGROUND_LOCATION);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-//        float f = 32.0F;
+        float f = 32.0F;
         bufferBuilder.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         bufferBuilder.vertex(this.x0, this.y1, 0.0)
-                     .uv(this.x0 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / f, (this.y1 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y1, 0.0)
-                     .uv(this.x1 / 32.0F, (this.y1 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / f, (this.y1 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x1, this.y0, 0.0)
-                     .uv(this.x1 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x1 / f, (this.y0 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, this.y0, 0.0)
-                     .uv(this.x0 / 32.0F, (this.y0 + (int) this.getScrollAmount()) / 32.0F)
+                     .uv(this.x0 / f, (this.y0 + (int) this.getScrollAmount()) / f)
                      .color(32, 32, 32, 255)
                      .endVertex();
         tesselator.end();
@@ -104,37 +103,37 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
 
         //top?
         bufferBuilder.vertex(this.x0, this.y0, z)
-                     .uv(this.x0 / 32.0F, this.y0 / 32.0F)
+                     .uv(this.x0 / f, this.y0 / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0 + this.width, this.y0, z)
-                     .uv((this.x0 + this.width) / 32.0F, this.y0 / 32.0F)
+                     .uv((this.x0 + this.width) / f, this.y0 / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0 + this.width, 0.0, z)
-                     .uv((this.x0 + this.width) / 32.0F, 0.0F)
+                     .uv((this.x0 + this.width) / f, 0.0F)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, 0.0, z)
-                     .uv(this.x0 / 32.0F, 0.0F)
+                     .uv(this.x0 / f, 0.0F)
                      .color(64, 64, 64, 255)
                      .endVertex();
 
         //bottom?
         bufferBuilder.vertex(this.x0, this.y1 + bottomDistance, z)
-                     .uv(this.x0 / 32.0F, (this.y1 + bottomDistance) / 32.0F)
+                     .uv(this.x0 / f, (this.y1 + bottomDistance) / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0 + this.width, this.y1 + bottomDistance, z)
-                     .uv((this.x0 + this.width) / 32.0F, (this.y1 + bottomDistance) / 32.0F)
+                     .uv((this.x0 + this.width) / f, (this.y1 + bottomDistance) / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0 + this.width, this.y1, z)
-                     .uv((this.x0 + this.width) / 32.0F, this.y1 / 32.0F)
+                     .uv((this.x0 + this.width) / f, this.y1 / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         bufferBuilder.vertex(this.x0, this.y1, z)
-                     .uv(this.x0 / 32.0F, this.y1 / 32.0F)
+                     .uv(this.x0 / f, this.y1 / f)
                      .color(64, 64, 64, 255)
                      .endVertex();
         tesselator.end();
@@ -176,15 +175,15 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
 
 
         // scrollbar
-        int o = this.getMaxScroll();
-        if (o > 0) {
+        int overflow = this.getMaxScroll();
+        if (overflow > 0) {
             int scrollbarStart = x0 + this.width - 6;
             int scrollbarEnd = x0 + this.width;
             RenderSystem.disableTexture();
             RenderSystem.setShader(GameRenderer::getPositionColorShader);
             int m = (int) ((float) ((this.y1 - this.y0) * (this.y1 - this.y0)) / (float) this.getMaxPosition());
             m = Mth.clamp(m, 32, this.y1 - this.y0 - 8);
-            int n = (int) this.getScrollAmount() * (this.y1 - this.y0 - m) / o + this.y0;
+            int n = (int) this.getScrollAmount() * (this.y1 - this.y0 - m) / overflow + this.y0;
             if (n < this.y0) {
                 n = this.y0;
             }
@@ -312,6 +311,7 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
         return parent.getFocused() == this;
     }
 
+    //todo: make this change the icons
     public void setSelectedBridge(HueBridge bridge) {
         this.selectedBridge = bridge;
         if (!bridge.isComplete()) {
@@ -327,7 +327,7 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
         emptyMessage = "";
         this.clearEntries();
         for (HueLight light : bridge.connectedLights) {
-            LightEntry entry = new LightEntry(light);
+            LightEntry entry = new LightEntry(light, this);
             this.addEntry(entry);
         }
     }
