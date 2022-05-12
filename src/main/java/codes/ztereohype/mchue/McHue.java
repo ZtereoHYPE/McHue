@@ -5,9 +5,12 @@ import codes.ztereohype.mchue.config.Config;
 import codes.ztereohype.mchue.config.ModSettings;
 import codes.ztereohype.mchue.devices.BridgeManager;
 import codes.ztereohype.mchue.devices.HueBridge;
-import codes.ztereohype.mchue.gui.ConfigurationScreen;
+import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
+import lombok.Getter;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.api.ModInitializer;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.toasts.SystemToast;
+import net.minecraft.network.chat.TextComponent;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,11 +22,14 @@ import java.util.Objects;
 import java.util.Optional;
 
 public class McHue implements ClientModInitializer {
-    public static final Logger LOGGER = LogManager.getLogger("mchue");
     public static final String MOD_ID = "mchue";
+    public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    public static HueBridge ACTIVE_BRIDGE;
-    public static ConfigurationScreen settingsScreen;
+    public static HueBridge activeBridge;
+    public static LightConfigurationScreen settingsScreen;
+
+    private String toastTitle;
+    private @Getter static McHue initialisedInstance;
 
     public static Config BRIDGE_DATA = new Config(Paths.get("./.mchue/bridge_data.config"),
             "McHue config containing sensitive data about the bridge. WARNING: DO NOT SHARE THIS UNDER ANY CIRCUMSTANCES",
@@ -39,6 +45,7 @@ public class McHue implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        initialisedInstance = this;
         try {
             BRIDGE_DATA.initialise();
             SETTINGS_CONFIG.initialise();
@@ -59,8 +66,9 @@ public class McHue implements ClientModInitializer {
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null"));
 
-        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream().filter(b -> b.getBridgeIp()
-                                                                                                       .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
+        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream()
+                                                                                .filter(b -> b.getBridgeIp()
+                                                                                              .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
                                                                                 .findFirst();
 
         if (validSavedBridge && savedBridgeFoundLocally.isPresent()) {
@@ -69,16 +77,18 @@ public class McHue implements ClientModInitializer {
             connectedBridge.setUsername(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
             connectedBridge.setToken(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
 
-            // debug stuff
-//            connectedBridge.setActiveLight("00:17:88:01:04:06:45:68-0b", true);
-
-
-            ACTIVE_BRIDGE = connectedBridge;
+            activeBridge = connectedBridge;
         } else {
             // todo: maybe change to more appropriate messages?
-            String toastTitle = validSavedBridge ? "Could not find Bridge." : "Set up the Hue Bridge.";
-            // todo: display toast at correct time
-//            Minecraft.getInstance().getToasts().addToast(new SystemToast(SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE, new TextComponent(toastTitle), new TextComponent("Go to the McHue settings.")));
+            toastTitle = validSavedBridge ? "Could not find Bridge." : "Set up the Hue Bridge.";
         }
+    }
+
+    //todo: fix this bs -_-
+    public void displayToastIfYouShould() {
+        if (toastTitle == null) return;
+//        Minecraft.getInstance().
+        Minecraft.getInstance().getToasts()
+                 .addToast(new SystemToast(SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE, new TextComponent(toastTitle), new TextComponent("Go to the McHue settings.")));
     }
 }

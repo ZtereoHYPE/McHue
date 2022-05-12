@@ -14,7 +14,7 @@
   "icon": "assets/mchue/textures/gui/bridge.png",
   "environment": "client",
   "entrypoints": {
-    "main": [
+    "client": [
       "codes.ztereohype.mchue.McHue"
     ]
   },
