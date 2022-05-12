@@ -1,7 +1,6 @@
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'maven-publish'
-	id 'io.github.juuxel.loom-quiltflower' version '1.+'
 	id 'org.quiltmc.quilt-mappings-on-loom' version '4.+'
 }
 
@@ -51,11 +50,11 @@ dependencies {
 	modRuntimeOnly(include(fabricApi.module("fabric-screen-api-v1", project.fabric_version)))
 
 	// libraries
+	include "net.shadew:json:0.3"
 	implementation "net.shadew:json:0.3"
-	implementation "net.shadew:shwutil:1.7.0"
 
-	compileOnly 'org.projectlombok:lombok:1.18.22'
-	annotationProcessor 'org.projectlombok:lombok:1.18.22'
+	compileOnly 'org.projectlombok:lombok:1.18.24'
+	annotationProcessor 'org.projectlombok:lombok:1.18.24'
 }
 
 processResources {
@@ -71,9 +70,6 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 }
 
