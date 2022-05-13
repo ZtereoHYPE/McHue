@@ -51,24 +51,39 @@ public final class LightState {
     }
 
     /**
-     * @return the brightness value between 0 and 1
+     * @return A double array containing the red, green, and blue gamma-corrected values
+     * This has been taken from the
+     * <a href="https://developers.meethue.com/develop/application-design-guidance/color-conversion-formulas-rgb-to-xy-and-back/">Philips Hue API Developer Guide</a>
+     */
+    private double[] getGammaCorrected() {
+        double red = (r > 0.04045f) ? Math.pow((r + 0.055f) / (1.0f + 0.055f), 2.4f) : (r / 12.92f);
+        double green = (g > 0.04045f) ? Math.pow((g + 0.055f) / (1.0f + 0.055f), 2.4f) : (g / 12.92f);
+        double blue = (b > 0.04045f) ? Math.pow((b + 0.055f) / (1.0f + 0.055f), 2.4f) : (b / 12.92f);
+        return new double[]{red, green, blue};
+    }
+
+    /**
+     * @return the brightness value between 0 and 1 with gamma correction
      */
     public double getBrightness() {
-        return (0.2126 * r + 0.7152 * g + 0.0722 * b);
+        double[] rgb = getGammaCorrected();
+        return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]);
     }
 
     /**
-     * @return the hue value between 0 and 1
+     * @return the hue value between 0 and 1 with gamma correction
      */
     public double getHue() {
-        return (0.5 * (r - g + r - b));
+        double[] rgb = getGammaCorrected();
+        return (0.5 * (rgb[0] - rgb[1] + rgb[0] - rgb[2]));
     }
 
     /**
-     * @return the saturation value between 0 and 1
+     * @return the saturation value between 0 and 1 with gamma correction
      */
     public double getSaturation() {
-        return (Math.max(Math.max(r, g), b) - Math.min(Math.min(r, g), b));
+        double[] rgb = getGammaCorrected();
+        return (Math.max(Math.max(rgb[0], rgb[1]), rgb[2]) - Math.min(Math.min(rgb[0], rgb[1]), rgb[2]));
     }
 
     /**
