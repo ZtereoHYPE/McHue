@@ -20,7 +20,7 @@ import org.jetbrains.annotations.NotNull;
 public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final @Getter HueLight light;
-    private final ResourceLocation BRIDGE_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/lightbulb.png");
+    private final ResourceLocation LIGHT_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/lightbulb_icon.png");
     private final LightSelectionList parent;
 
     public LightEntry(HueLight light, LightSelectionList parent) {
@@ -40,7 +40,7 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
 
         // icon
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, BRIDGE_ICON);
+        RenderSystem.setShaderTexture(0, LIGHT_ICON);
         RenderSystem.enableBlend();
         GuiComponent.blit(poseStack, x, y, 0.0F, 0.0F, ICON_SIZE, ICON_SIZE, ICON_SIZE, ICON_SIZE);
         RenderSystem.disableBlend();

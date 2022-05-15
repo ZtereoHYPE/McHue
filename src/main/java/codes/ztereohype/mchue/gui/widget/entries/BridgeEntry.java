@@ -21,7 +21,7 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final @Getter HueBridge bridge;
     private final BridgeSelectionList parent;
-    private final ResourceLocation BRIDGE_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge.png");
+    private final ResourceLocation BRIDGE_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_icon.png");
     private boolean connected = false;
 
     public BridgeEntry(HueBridge bridge, BridgeSelectionList parent) {
