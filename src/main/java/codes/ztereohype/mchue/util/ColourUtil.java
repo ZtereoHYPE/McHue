@@ -48,4 +48,20 @@ public class ColourUtil {
 
         return new LightState(r, g, b);
     }
+
+    public static LightState xyToLightState(float x, float y, int Y, boolean on) {
+        float z = 1.0f - x - y;
+        float X = (Y / y) * x;
+        float Z = (Y / y) * z;
+
+        double r =  X * 1.656492f - Y * 0.354851f - Z * 0.255038f;
+        double g = -X * 0.707196f + Y * 1.655397f + Z * 0.036152f;
+        double b =  X * 0.051713f - Y * 0.121364f + Z * 1.011530f;
+
+        r = r <= 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math.pow(r, (1.0f / 2.4f)) - 0.055f;
+        g = g <= 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math.pow(g, (1.0f / 2.4f)) - 0.055f;
+        b = b <= 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math.pow(b, (1.0f / 2.4f)) - 0.055f;
+
+        return new LightState((int) (r * 255), (int) (g * 255), (int) (b * 255), on);
+    }
 }

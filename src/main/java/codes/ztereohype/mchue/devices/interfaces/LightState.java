@@ -67,15 +67,42 @@ public final class LightState {
      */
     public double getBrightness() {
         double[] rgb = getGammaCorrected();
-        return (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]);
+        return Math.max(Math.max(rgb[0], rgb[1]), rgb[2]);
+//        return max / 255.0D;
     }
 
     /**
-     * @return the hue value between 0 and 1 with gamma correction
+     * @return the hue value between 0 and 360 with gamma correction
      */
     public double getHue() {
         double[] rgb = getGammaCorrected();
-        return (0.5 * (rgb[0] - rgb[1] + rgb[0] - rgb[2]));
+
+        double red = rgb[0];
+        double green = rgb[1];
+        double blue = rgb[2];
+
+        double min = Math.min(Math.min(red, green), blue);
+        double max = Math.max(Math.max(red, green), blue);
+
+        double delta = max - min;
+
+        if (delta == 0) return 0;
+
+        double hue;
+        if (max == red) {
+            hue = (green - blue) / delta;
+
+        } else if (max == green) {
+            hue = 2D + (blue - red) / delta;
+
+        } else {
+            hue = 4D + (red - green) / delta;
+        }
+
+        hue *= 60;
+        hue = hue < 0 ? hue + 360 : hue;
+
+        return hue;
     }
 
     /**
@@ -83,7 +110,7 @@ public final class LightState {
      */
     public double getSaturation() {
         double[] rgb = getGammaCorrected();
-        return (Math.max(Math.max(rgb[0], rgb[1]), rgb[2]) - Math.min(Math.min(rgb[0], rgb[1]), rgb[2]));
+        return 1 - (3 / (rgb[0] + rgb[1] + rgb[2])) * Math.min(rgb[0], Math.min(rgb[1], rgb[2]));
     }
 
     /**

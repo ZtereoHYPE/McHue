@@ -1,6 +1,7 @@
 package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.devices.interfaces.LightState;
+import codes.ztereohype.mchue.util.ColourUtil;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
 import net.shadew.json.JsonNode;
@@ -23,8 +24,8 @@ public class HueLight {
 
     private final JsonPath ON_PATH = JsonPath.parse("state.on");
     private final JsonPath BRI_PATH = JsonPath.parse("state.bri");
-    private final JsonPath HUE_PATH = JsonPath.parse("state.hue");
-    private final JsonPath SAT_PATH = JsonPath.parse("state.sat");
+    private final JsonPath X_PATH = JsonPath.parse("state.xy[0]");
+    private final JsonPath Y_PATH = JsonPath.parse("state.xy[1]");
 
     public HueLight(String id, String index, String name, HueBridge parentBridge) {
         this.id = id;
@@ -38,7 +39,8 @@ public class HueLight {
         if (colour.equals(lastState)) return true;
         lastState = colour;
 
-        String body = "{\"on\":" + colour.isPowered() + ", \"sat\":" + colour.getSaturation() + ", \"bri\":" + colour.getBrightness() + ",\"hue\":" + colour.getHue() + "\"transitiontime\": 1" + "}";
+        //todo: unhardcode transition time?
+        String body = "{\"on\":" + colour.isPowered() + ", \"sat\":" + (int) (colour.getSaturation() * 255) + ", \"bri\":" + (int) (colour.getBrightness() * 254) + ", \"hue\":" + (int) (colour.getHue()/360D * 255 * 256) + ", \"transitiontime\": 5" + "}";
         return NetworkUtil.putJson(POST_ENDPOINT, body);
     }
 
@@ -49,11 +51,12 @@ public class HueLight {
         if (light.isEmpty()) return new LightState(255, 0, 0, false);
 
         JsonNode lightJson = light.get();
+
         boolean state = lightJson.query(ON_PATH).asBoolean();
         int brightness = lightJson.query(BRI_PATH).asInt();
-        int hue = lightJson.query(HUE_PATH).asInt();
-        int saturation = lightJson.query(SAT_PATH).asInt();
+        float x = lightJson.query(X_PATH).asFloat();
+        float y = lightJson.query(Y_PATH).asFloat();
 
-        return new LightState(brightness, hue, saturation, state);
+        return ColourUtil.xyToLightState(x, y, brightness, state);
     }
 }
