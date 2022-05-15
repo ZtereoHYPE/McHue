@@ -37,6 +37,7 @@ public class McHue implements ClientModInitializer {
                     BridgeProperties.BRIDGE_IP.getSettingName(), BridgeProperties.BRIDGE_IP.getDefaultValue(),
                     BridgeProperties.DEVICE_INDENTIFIER.getSettingName(), BridgeProperties.DEVICE_INDENTIFIER.getDefaultValue(),
                     BridgeProperties.USERNAME.getSettingName(), BridgeProperties.USERNAME.getDefaultValue(),
+                    BridgeProperties.CLIENT_KEY.getSettingName(), BridgeProperties.CLIENT_KEY.getDefaultValue(),
                     BridgeProperties.CONNECTED_LIGHTS.getSettingName(), BridgeProperties.CONNECTED_LIGHTS.getDefaultValue()));
 
     public static Config SETTINGS_CONFIG = new Config(Paths.get("./config/mchue.config"),
@@ -90,5 +91,9 @@ public class McHue implements ClientModInitializer {
 //        Minecraft.getInstance().
         Minecraft.getInstance().getToasts()
                  .addToast(new SystemToast(SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE, new TextComponent(toastTitle), new TextComponent("Go to the McHue settings.")));
+    }
+
+    public boolean isEntertainmentMode() {
+        return Boolean.getBoolean(SETTINGS_CONFIG.getProperty(ModSettings.ENTERTAINMENT_ZONES));
     }
 }

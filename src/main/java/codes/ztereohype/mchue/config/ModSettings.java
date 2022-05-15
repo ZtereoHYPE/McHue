@@ -5,7 +5,8 @@ import lombok.Getter;
 import java.util.Locale;
 
 public enum ModSettings implements PropertiesEnum {
-    IS_ACTIVE("true", false);
+    IS_ACTIVE("true", false),
+    ENTERTAINMENT_ZONES("false", false);
 
     final @Getter String defaultValue;
     final @Getter boolean isArray;

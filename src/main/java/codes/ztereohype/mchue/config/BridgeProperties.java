@@ -9,6 +9,7 @@ public enum BridgeProperties implements PropertiesEnum {
     BRIDGE_IP("null", false),
     DEVICE_INDENTIFIER("null", false),
     USERNAME("null", false),
+    CLIENT_KEY("null", false),
     CONNECTED_LIGHTS("null", true);
 
     final @Getter String defaultValue;

@@ -69,7 +69,7 @@ public class BridgeManager {
             McHue.LOGGER.log(Level.INFO, "No username, generating it.");
 
             String url = "http://" + bridge.getBridgeIp() + "/api";
-            String data = "{\"devicetype\":\"" + bridge.getUsername() + "\"}";
+            String data = "{\"devicetype\":\"" + bridge.getUsername() + "\", \"generateclientkey\":true}";
 
             // only valid for 30 attempts
             UsernameCreator uc = new UsernameCreator(url, data, bridge);
@@ -102,7 +102,8 @@ public class BridgeManager {
 
             JsonNode parsedResponse = response.get().query("[0]");
             if (parsedResponse.has("success")) {
-                return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString());
+                //todo: find a better way than the regex splitting
+                return Pair.of(BridgeResponse.SUCCESS, parsedResponse.query("success.username").asString() + ";" + parsedResponse.query("success.clientkey").asString());
 
             } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
                 return Pair.of(BridgeResponse.PRESS_BUTTON, String.valueOf(DEFAULT_POLL_INTERVAL * (MAX_ATTEMPTS - attempt)));
@@ -136,12 +137,14 @@ public class BridgeManager {
                 }
                 case SUCCESS -> {
                     scheduler.shutdown();
-                    bridge.setToken(usernameAttempt.second());
+                    bridge.setToken(usernameAttempt.second().split(";")[0]);
+                    bridge.setClientKey(usernameAttempt.second().split(";")[1]);
 
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, bridge.getBridgeId());
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getBridgeIp());
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUsername());
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getToken());
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, usernameAttempt.second().split(";")[1]);
 
                     bridgeConnectionScreen.setSubtitle("Connection completed with Success!");
                     bridgeConnectionScreen.setCountdown("You may go back to the previous screen.");

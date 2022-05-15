@@ -5,6 +5,7 @@ import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
+import lombok.Setter;
 import net.shadew.json.JsonNode;
 import net.shadew.json.JsonPath;
 
@@ -19,6 +20,7 @@ public class HueBridge {
     public List<HueLight> connectedLights = new ArrayList<>();
     private @Getter String username;
     private @Getter String token;
+    private @Getter String clientKey;
 
     private final JsonPath NAME_PATH = JsonPath.parse("name");
     private final JsonPath ID_PATH = JsonPath.parse("uniqueid");
@@ -30,14 +32,21 @@ public class HueBridge {
 
     public void setUsername(String username) {
         this.username = username;
-        if (this.token != null) {
+        if (this.token != null && this.clientKey != null) {
             passedConnectionTest = scanLights();
         }
     }
 
     public void setToken(String token) {
         this.token = token;
-        if (this.username != null) {
+        if (this.username != null && this.clientKey != null) {
+            passedConnectionTest = scanLights();
+        }
+    }
+
+    public void setClientKey(String token) {
+        this.token = token;
+        if (this.username != null && this.token != null) {
             passedConnectionTest = scanLights();
         }
     }
