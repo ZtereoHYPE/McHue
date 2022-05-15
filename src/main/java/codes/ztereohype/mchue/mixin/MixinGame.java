@@ -16,7 +16,7 @@ public class MixinGame {
 
     @Inject(at = @At("HEAD"), method = "onStartGameSession()V")
     public void injectUpdaterStart(CallbackInfo ci) {
-        LightColourScheduler.startUpdater(this.minecraft);
+        LightColourScheduler.startUpdater();
     }
 
     @Inject(at = @At("HEAD"), method = "onLeaveGameSession()V")

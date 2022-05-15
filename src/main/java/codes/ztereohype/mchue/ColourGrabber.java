@@ -7,15 +7,28 @@ import com.mojang.blaze3d.platform.NativeImage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class ColourGrabber {
     private final Minecraft minecraft;
 
-    public ColourGrabber(Minecraft minecraft) {
-        this.minecraft = minecraft;
+//    private BlockPos playerPos;
+//
+//    private int grassColour;
+//    private int waterColour;
+//    private int skyColour;
+//    private int lightColour;
+
+    public ColourGrabber() {
+        this.minecraft = Minecraft.getInstance();
     }
+
+//    private void updateValues() {
+//
+//    }
 
     private BlockPos getPlayerLocation() {
         return new BlockPos(minecraft.player.getEyePosition());
@@ -59,7 +72,26 @@ public class ColourGrabber {
         return new LightState(minecraft.level.getBiomeManager().getBiome(getPlayerLocation()).value().getFogColor());
     }
 
+//    public LightState getSkyColour() {
+////        return new LightState(minecraft.level.getSkyColor(new Vec3(getPlayerLocation().), 0F));
+//    }
+
+    private BlockState marchToRoof(BlockPos pos, Direction direction) {
+        Level level = minecraft.level;
+        //todo: figure this out
+        int step = pos.get(direction.getAxis());
+
+        int max = direction.getAxis() == Direction.Axis.Y ? direction.getStepY() > 0 ? level.getMaxBuildHeight() : level.getMinBuildHeight() : 200;
+
+        while (step < max && level.getBlockState(pos).isAir()) {
+            step++;
+            pos = pos.above();
+        }
+        return minecraft.level.getBlockState(pos);
+    }
+
     public LightState getColour() {
+//        System.out.println(minecraft.level.getBlockState(marchToRoof(getPlayerLocation(), Direction.UP)));
         assert minecraft.player != null;
         LightState colour;
 
