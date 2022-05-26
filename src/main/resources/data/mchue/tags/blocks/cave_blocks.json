@@ -1,0 +1,13 @@
+{
+  "replace": false,
+  "values": [
+    "#minecraft:base_stone_overworld",
+    "#minecraft:stone_ore_replaceables",
+    "#minecraft:deepslate_ore_replaceables",
+    "#minecraft:lush_ground_replaceable",
+    "#minecraft:cave_vines",
+    "#minecraft:crystal_sound_blocks",
+    "minecraft:dripstone_block",
+    "minecraft:pointed_dripstone"
+  ]
+}
