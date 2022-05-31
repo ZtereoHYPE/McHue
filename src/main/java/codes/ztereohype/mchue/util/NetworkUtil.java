@@ -1,23 +1,43 @@
 package codes.ztereohype.mchue.util;
 
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.shadew.json.Json;
 import net.shadew.json.JsonNode;
 
+import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.net.URI;
+import java.net.*;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.security.NoSuchAlgorithmException;
 import java.util.Optional;
 
 public class NetworkUtil {
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final Json JSON = Json.json();
+    private static final DatagramSocket datagramSocket;
+    private static final SSLContext sslCtx;
 
-    public static boolean putJson(String endpoint, String json) {
+    static {
+        try {
+            sslCtx = SSLContext.getInstance("DTLS");
+//            sslCtx.init();
+
+            datagramSocket = new DatagramSocket();
+            datagramSocket.setSoTimeout(10 * 1000);  // in millis, match Hue Bridge timeout
+        } catch (SocketException | NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static boolean putJson(String endpoint, String json, ObjectArrayList<String> extraHeaders) {
+        extraHeaders.add("Content-Type");
+        extraHeaders.add("application/json");
+
         HttpRequest request = HttpRequest.newBuilder()
                                          .uri(URI.create(endpoint))
-                                         .header("Content-Type", "application/json")
+                                         .headers(extraHeaders.toArray(String[]::new))
                                          .PUT(HttpRequest.BodyPublishers.ofString(json))
                                          .build();
 
@@ -34,10 +54,17 @@ public class NetworkUtil {
         }
     }
 
-    public static Optional<JsonNode> postJson(String endpoint, String json) {
+    public static boolean putJson(String endpoint, String json) {
+        return putJson(endpoint, json, new ObjectArrayList<>());
+    }
+
+    public static Optional<JsonNode> postJson(String endpoint, String json, ObjectArrayList<String> extraHeaders) {
+        extraHeaders.add("Content-Type");
+        extraHeaders.add("application/json");
+
         HttpRequest request = HttpRequest.newBuilder()
                                          .uri(URI.create(endpoint))
-                                         .header("Content-Type", "application/json")
+                                         .headers(extraHeaders.toArray(String[]::new))
                                          .POST(HttpRequest.BodyPublishers.ofString(json))
                                          .build();
 
@@ -54,10 +81,17 @@ public class NetworkUtil {
         }
     }
 
-    public static Optional<JsonNode> getJson(String endpoint) {
-        HttpRequest request = HttpRequest.newBuilder()
+    public static Optional<JsonNode> postJson(String endpoint, String json) {
+        return postJson(endpoint, json, new ObjectArrayList<>());
+    }
+
+    public static Optional<JsonNode> getJson(String endpoint, ObjectArrayList<String> extraHeaders) {
+        extraHeaders.add("Content-Type");
+        extraHeaders.add("application/json");
+
+        var request = HttpRequest.newBuilder()
                                          .uri(URI.create(endpoint))
-                                         .header("Content-Type", "application/json")
+                                         .headers(extraHeaders.toArray(String[]::new))
                                          .GET()
                                          .build();
 
@@ -73,4 +107,27 @@ public class NetworkUtil {
             return Optional.empty();
         }
     }
+
+    public static Optional<JsonNode> getJson(String endpoint) {
+        return getJson(endpoint, new ObjectArrayList<>());
+    }
+
+//    public static boolean streamDatagramPacket(byte[] data, String host, int port) {
+//        try {
+//            DatagramPacket datagramPacket = new DatagramPacket(data, data.length, InetAddress.getByName(host), port);
+//            datagramSocket.send(datagramPacket);
+//            return true;
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//            return false;
+//        }
+//    }
+//
+//    public static void runTest() {
+//        var DTLSOD = new DTLSOverDatagram();
+//
+////        var sslEngine = new SSL
+//
+////        DTLSOD.handshake();
+//    }
 }

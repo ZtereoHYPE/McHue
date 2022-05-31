@@ -6,6 +6,7 @@ import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
 import net.shadew.json.JsonNode;
 import net.shadew.json.JsonPath;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
@@ -35,7 +36,7 @@ public class HueLight {
         this.GET_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getToken() + "/lights/" + this.index;
     }
 
-    public boolean setColour(LightState colour) {
+    public boolean setColour(@NotNull LightState colour) {
         if (colour.equals(lastState)) return true;
         lastState = colour;
 

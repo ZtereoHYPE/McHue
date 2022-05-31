@@ -4,6 +4,7 @@ import codes.ztereohype.mchue.devices.HueLight;
 import codes.ztereohype.mchue.devices.interfaces.LightState;
 import org.apache.logging.log4j.Level;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -16,7 +17,15 @@ public class LightColourScheduler {
     private static ColourGrabber cg;
 
     private static void updateColour() {
-        McHue.activeBridge.streamColour(cg.getColour());
+        LightState colour;
+        try {
+            colour = cg.getColour();
+        } catch ( Exception e ) {
+            McHue.LOGGER.error( "Caught exception in LightColourScheduler. StackTrace:\n" + Arrays.toString(e.getStackTrace()));
+            stopUpdater();
+            return;
+        }
+        McHue.activeBridge.streamColour(colour);
     }
 
     public static void startUpdater() {
