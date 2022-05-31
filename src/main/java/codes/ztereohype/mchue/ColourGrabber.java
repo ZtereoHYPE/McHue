@@ -4,51 +4,68 @@ import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.mixin.LightTextureAccessor;
 import codes.ztereohype.mchue.util.ColourUtil;
 import com.mojang.blaze3d.platform.NativeImage;
+import com.mojang.math.Vector3f;
+import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Registry;
-import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.level.ColorResolver;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.GrassBlock;
+import net.minecraft.world.level.block.LeavesBlock;
+import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ColourGrabber {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final Level level = Minecraft.getInstance().level;
 
+    private final Map<Block, Integer> blockColours = new HashMap<>();
+    private final Vec3[] floorVectors;
+
     private final TagKey<Block> CAVE_TAG = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation("mchue", "cave_blocks"));
     private final Vec3[] caveCheckVectors;
 
-//    private BlockPos playerPos;
-//
-//    private int grassColour;
-//    private int waterColour;
-//    private int skyColour;
-//    private int lightColour;
-
     public ColourGrabber() {
-        this.caveCheckVectors = getFibSphereVectors(30);
+        this.caveCheckVectors = getFibSphereVectors(75, false);
+        this.floorVectors = getFibSphereVectors(50, true);
+        calculateBlockColours();
     }
 
-    private Vec3[] getFibSphereVectors(int samples) {
+    private void calculateBlockColours() {
+        Registry.BLOCK.stream().forEach(block -> blockColours.put(block, block.defaultBlockState().getMapColor(level, new BlockPos(0, 0, 0)).col));
+    }
+
+    private Vec3[] getFibSphereVectors(int samples, boolean floor) {
         List<Vec3> vectors = new ArrayList<>();
         double phi = Math.PI * (3 - Math.sqrt(5));
 
+        //todo: fix this to accept 3 parameters (floor walls cieling)
         for (int i = samples/4; i < samples; i++) {
-            double y = 1 - (i / (float) (samples - 1)) * 2; // y from 1 to -1
+            double y;
+
+            if (floor) {
+                y = (i / (float) (samples - 1)); // y from -1 to 0
+            } else {
+                y = 1 - (i / (float) (samples - 1)) * 2; // y from 1 to -1
+            }
 
             double radius = Math.sqrt(1 - y * y);
             double theta = phi * i;
@@ -65,12 +82,14 @@ public class ColourGrabber {
         return new BlockPos(minecraft.player.getEyePosition());
     }
 
-    public LightState getGrassBiomeBlend() {
-        return new LightState(minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.GRASS_COLOR_RESOLVER));
-    }
-
-    public LightState getWaterBiomeBlend() {
-        return new LightState(minecraft.level.getBlockTint(getPlayerLocation(), BiomeColors.WATER_COLOR_RESOLVER));
+    /**
+     * Gets the colour of the block at the given position
+     * @param type the {@link ColorResolver} to use, obtained from {@link BiomeColors}
+     * @param pos the BlockPos to get the colour of the biome blend from
+     * @return the colour of the block at the given position
+     */
+    public LightState getBiomeBlendColour(ColorResolver type, BlockPos pos) {
+        return new LightState(minecraft.level.getBlockTint(pos, type));
     }
 
     public LightState getLightMultiplier() {
@@ -91,18 +110,22 @@ public class ColourGrabber {
         return new LightState(r, g, b);
     }
 
-    public LightState getOverworldColour() {
-        float caveness = checkCave();
-        if (minecraft.player.isUnderWater()) {
-            return getWaterBiomeBlend();
-        } else if (caveness > 0){
-            return ColourUtil.lerpColours(getGrassBiomeBlend(), getCaveColour(), caveness);
+    private LightState getBlockColour(@NonNull Block block, BlockPos pos) {
+        if (GrassBlock.class.equals(block.getClass())) {
+            return getBiomeBlendColour(BiomeColors.GRASS_COLOR_RESOLVER, pos);
+        } else if (block instanceof LiquidBlock && block.defaultBlockState().getFluidState().is(FluidTags.WATER)) {
+            return getBiomeBlendColour(BiomeColors.WATER_COLOR_RESOLVER, pos);
+
+        // todo: use leaves colour BUT not for leaves that don't use the leaves colour blend (??)
+        } else if (block.defaultBlockState().is(BlockTags.LEAVES)) {
+            return getBiomeBlendColour(BiomeColors.FOLIAGE_COLOR_RESOLVER, pos);
         } else {
-            return getGrassBiomeBlend();
+            return new LightState(blockColours.get(block));
         }
     }
 
-    private LightState getCaveColour() {
+    private LightState getCaveColour(float caveness) {
+        //todo redo this
         return new LightState(0x99, 0x99, 0x99);
     }
 
@@ -110,18 +133,17 @@ public class ColourGrabber {
         return new LightState(level.getBiomeManager().getBiome(getPlayerLocation()).value().getFogColor());
     }
 
-//    public LightState getSkyColour() {
-////        return new LightState(minecraft.level.getSkyColor(new Vec3(getPlayerLocation().), 0F));
-//    }
+    public LightState getSkyColour() {
+        BlockPos pos = getPlayerLocation();
+        Vec3 colour = minecraft.level.getSkyColor(new Vec3(pos.getX(), pos.getY(), pos.getZ()), 0F);
+        return new LightState((int) colour.x * 255, (int) colour.y * 255, (int) colour.z * 255);
+    }
 
     private float checkCave() {
-        Vec3 startPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
         int hits = 0;
 
         for (Vec3 caveCheckVector : caveCheckVectors) {
-            Vec3 end = startPos.add(caveCheckVector.scale(100)); // todo unhardcode (later too)
-
-            BlockHitResult hitResult = level.clip(new ClipContext(startPos, end, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, minecraft.player));
+            BlockHitResult hitResult = castRay(caveCheckVector, 100, true);
 
             if (hitResult.getType() == HitResult.Type.BLOCK) {
                 int skyLight = level.getBrightness(LightLayer.SKY, hitResult.getBlockPos());
@@ -129,8 +151,7 @@ public class ColourGrabber {
                 // look for the block that potentially has access to skylight around the hit one if we have 0 skylight (eg air next to cave wall)
                 if (skyLight == 0) {
                     for (Direction direction : Direction.values()) {
-                        skyLight = Math.max(skyLight, level.getBrightness(LightLayer.SKY, hitResult.getBlockPos()
-                                                                                                   .relative(direction)));
+                        skyLight = Math.max(skyLight, level.getBrightness(LightLayer.SKY, hitResult.getBlockPos().relative(direction)));
                     }
                 }
 
@@ -149,15 +170,58 @@ public class ColourGrabber {
         }
     }
 
-    public LightState getColour() {
-        System.out.println(checkCave());
-        assert minecraft.player != null;
-        LightState colour;
+    private LightState getFloorPrevalentColour() {
+        List<Block> hitList = new ArrayList<>();
 
+        for (Vec3 floorVec : floorVectors) {
+            BlockHitResult hitResult = castRay(floorVec, 20, false);
+            if (hitResult.getType() == HitResult.Type.BLOCK) {
+                hitList.add(level.getBlockState(hitResult.getBlockPos()).getBlock());
+            }
+        }
+
+        List<Map.Entry<Block, Long>> mostCommonBlocks = new ArrayList<>(hitList.stream().parallel()
+                                                                               .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+                                                                               .entrySet()
+                                                                               .stream()
+                                                                               .toList());
+        // sort by count reversed
+        mostCommonBlocks.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
+
+
+        float caveness = checkCave();
+        if (mostCommonBlocks.isEmpty()) return caveness > 0 ? getCaveColour(caveness) : getSkyColour();
+
+        BlockPos playerLocation = getPlayerLocation();
+
+        // only use the one or two most common blocks
+        if (mostCommonBlocks.size() < 2) {
+            return getBlockColour(mostCommonBlocks.get(0).getKey(), playerLocation);
+        } else {
+            LightState colour1 = getBlockColour(mostCommonBlocks.get(0).getKey(), playerLocation);
+            LightState colour2 = getBlockColour(mostCommonBlocks.get(1).getKey(), playerLocation);
+
+            float ratio = mostCommonBlocks.get(1).getValue() / (float) (mostCommonBlocks.get(0).getValue() + mostCommonBlocks.get(1).getValue());
+
+            return ColourUtil.lerpColours(colour1, colour2, ratio);
+        }
+    }
+
+    private BlockHitResult castRay(Vec3 direction, int distance, boolean ignoreFluid) {
+        Vec3 startPos = Minecraft.getInstance().gameRenderer.getMainCamera().getPosition();
+        Vec3 end = startPos.add(direction.scale(distance));
+
+        ClipContext.Fluid fluidClipContext = ignoreFluid ? ClipContext.Fluid.NONE : ClipContext.Fluid.SOURCE_ONLY;
+
+        return level.clip(new ClipContext(startPos, end, ClipContext.Block.COLLIDER, fluidClipContext, minecraft.player));
+    }
+
+    public LightState getColour() {
+        LightState colour;
         if (minecraft.player.level.dimension() == Level.NETHER) {
             colour = ColourUtil.blendLightColour(getNetherColour(), getLightMultiplier(), 0.3F, 1.4F);
         } else {
-            colour = ColourUtil.blendLightColour(getOverworldColour(), getLightMultiplier(), 0.7F, 0.9F);
+            colour = ColourUtil.blendLightColour(getFloorPrevalentColour(), getLightMultiplier(), 0.7F, 0.9F);
         }
 
         return colour;
