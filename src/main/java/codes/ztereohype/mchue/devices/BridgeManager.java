@@ -144,7 +144,7 @@ public class BridgeManager {
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, bridge.getBridgeIp());
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, bridge.getUsername());
                     McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, bridge.getToken());
-                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, usernameAttempt.second().split(";")[1]);
+                    McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, bridge.getClientKey());
 
                     bridgeConnectionScreen.setSubtitle("Connection completed with Success!");
                     bridgeConnectionScreen.setCountdown("You may go back to the previous screen.");

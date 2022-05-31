@@ -44,8 +44,8 @@ public class HueBridge {
         }
     }
 
-    public void setClientKey(String token) {
-        this.token = token;
+    public void setClientKey(String clientKey) {
+        this.clientKey = clientKey;
         if (this.username != null && this.token != null) {
             passedConnectionTest = scanLights();
         }

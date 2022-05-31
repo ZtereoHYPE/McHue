@@ -77,8 +77,9 @@ public class McHue implements ClientModInitializer {
 
             connectedBridge.setUsername(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
             connectedBridge.setToken(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
+            connectedBridge.setClientKey(BRIDGE_DATA.getProperty(BridgeProperties.CLIENT_KEY));
 
-            activeBridge = connectedBridge;
+            McHue.activeBridge = connectedBridge;
         } else {
             // todo: maybe change to more appropriate messages?
             toastTitle = validSavedBridge ? "Could not find Bridge." : "Set up the Hue Bridge.";
