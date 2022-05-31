@@ -34,6 +34,8 @@ public class BridgeConnectionScreen extends Screen {
     private Button tryAgainButton;
     private Button backButton;
 
+    private boolean allowConnectingOnInit = true;
+
     public BridgeConnectionScreen(Screen lastScreen, BridgeEntry connectingBridgeEntry) {
         super(Component.nullToEmpty("Connect to the Bridge"));
         this.lastScreen = lastScreen;
@@ -59,7 +61,10 @@ public class BridgeConnectionScreen extends Screen {
             this.minecraft.setScreen(lastScreen);
         }));
 
-        startConnection();
+        if (allowConnectingOnInit) {
+            startConnection();
+            allowConnectingOnInit = false;
+        }
     }
 
     @Override
