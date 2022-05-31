@@ -33,8 +33,8 @@ public class LightConfigurationScreen extends Screen {
         assert this.minecraft != null;
         super.init();
 
-        bridgeSelectionList = this.addRenderableWidget(new BridgeSelectionList(this.minecraft, 0, this.width / 2 - 8, 50, this.height - 36, 36, this));
-        lightSelectionList = this.addRenderableWidget(new LightSelectionList(this.minecraft, this.width / 2 + 8, this.width, 50, this.height - 36, 36, this));
+        bridgeSelectionList = this.addRenderableWidget(new BridgeSelectionList(this.minecraft, 8, this.width / 2 - 5, 50, this.height - 36, 36, this));
+        lightSelectionList = this.addRenderableWidget(new LightSelectionList(this.minecraft, this.width / 2 + 5, this.width - 8, 50, this.height - 36, 36, this));
 
         if (selectedBridgeEntry != null) {
             bridgeSelectionList.setSelected(selectedBridgeEntry);
@@ -119,7 +119,7 @@ public class LightConfigurationScreen extends Screen {
     }
 
     private void connectBridge() {
-        //todo: yeha
+        //todo: so if the bridge failed connecting to the lights we are reconnecting from the ground up??? what the shit was I thinking this is spaghetti hell
         if (selectedBridgeEntry.getBridge().passedConnectionTest) {
             McHue.activeBridge = selectedBridgeEntry.getBridge();
             selectedBridgeEntry.setConnected(true);

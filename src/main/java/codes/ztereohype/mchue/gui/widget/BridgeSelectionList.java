@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.AbstractSelectionList;
+import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
@@ -18,27 +19,28 @@ import java.util.Objects;
 public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
     private final LightConfigurationScreen parent;
 
-    private BridgeEntry hovered;
+    private Entry<BridgeEntry> hovered;
 
     public BridgeSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightConfigurationScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
         this.parent = parent;
-        //todo not necessary: you have the parent height just do the math to subtract y and height and you're good
     }
 
     @Override
     public void setSelected(BridgeEntry entry) {
         super.setSelected(entry);
-//        parent.
         parent.setSelectedBridgeEntry(entry);
     }
 
-    //todo: accessibility
+    //todo: accessibility (this is a test?)
     @Override
     public void updateNarration(@NotNull NarrationElementOutput narrationElementOutput) {
-
+        String narration = "Bridge Selection List";
+        if (this.isFocused()) {
+            narrationElementOutput.add(NarratedElementType.TITLE, narration);
+        }
     }
 
     @Override
@@ -130,7 +132,7 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
         bufferBuilder.vertex(this.x0, this.y1 - shadowLength, 0.0).color(0, 0, 0, 0).endVertex();
         tesselator.end();
 
-
+        // todo: make scrollbar draggable
         // scrollbar
         int o = this.getMaxScroll();
         if (o > 0) {

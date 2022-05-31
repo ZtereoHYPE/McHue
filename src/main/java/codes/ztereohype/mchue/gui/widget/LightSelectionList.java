@@ -85,7 +85,6 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
                      .endVertex();
         tesselator.end();
 
-
         int k = this.getRowLeft();
         int l = this.y0 + 4 - (int) this.getScrollAmount();
 
