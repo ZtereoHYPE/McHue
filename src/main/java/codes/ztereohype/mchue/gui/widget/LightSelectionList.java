@@ -4,7 +4,8 @@ import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.devices.HueLight;
-import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
+import codes.ztereohype.mchue.devices.interfaces.LightState;
+import codes.ztereohype.mchue.gui.screens.LightSelectionScreen;
 import codes.ztereohype.mchue.gui.widget.entries.LightEntry;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -21,12 +22,13 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class LightSelectionList extends ObjectSelectionList<LightEntry> {
-    private final LightConfigurationScreen parent;
+    private final LightSelectionScreen parent;
+    private final LightState blinkColour = new LightState(32, 255, 128, true);
     private HueBridge selectedBridge;
 
     private @Setter String emptyMessage = "Select a bridge to view its lights.";
 
-    public LightSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightConfigurationScreen parent) {
+    public LightSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightSelectionScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
@@ -35,7 +37,14 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
 
     @Override
     public void setSelected(LightEntry entry) {
+        if (entry == null) return; // ???
         boolean selected = !selectedBridge.getActiveLights().contains(entry.getLight());
+        if (selected) {
+            LightState previousColour = entry.getLight().getState();
+            entry.getLight().setColour(blinkColour);
+            entry.getLight().setColour(previousColour);
+        }
+
         selectedBridge.setActiveLight(entry.getLight().getId(), selected);
     }
 
@@ -313,6 +322,12 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
     //todo: make this change the icons
     public void setSelectedBridge(HueBridge bridge) {
         this.selectedBridge = bridge;
+
+        if (bridge == null) {
+            this.clearEntries();
+            return;
+        }
+
         if (!bridge.isComplete()) {
             emptyMessage = "Press \"Connect\" to finish connecting.";
             return;

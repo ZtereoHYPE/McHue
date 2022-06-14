@@ -7,6 +7,7 @@ import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
 import codes.ztereohype.mchue.gui.widget.LightSelectionList;
 import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.vertex.PoseStack;
+import lombok.NonNull;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
@@ -16,15 +17,18 @@ import net.minecraft.network.chat.TextComponent;
 import org.jetbrains.annotations.NotNull;
 
 @Environment(value = EnvType.CLIENT)
-public class LightConfigurationScreen extends Screen {
+public class LightSelectionScreen extends Screen {
     public final String title = "McHue configuration screen";
     private final Screen lastScreen;
+
     public BridgeConnectionScreen bridgeConnectionScreen;
+
     private BridgeSelectionList bridgeSelectionList;
     private LightSelectionList lightSelectionList;
+
     private BridgeEntry selectedBridgeEntry;
 
-    public LightConfigurationScreen(Screen lastScreen) {
+    public LightSelectionScreen(Screen lastScreen) {
         super(Component.nullToEmpty("McHue configuration screen"));
         this.lastScreen = lastScreen;
     }
@@ -46,7 +50,7 @@ public class LightConfigurationScreen extends Screen {
                 72,
                 20,
                 new TextComponent("Scan Bridges"),
-                button -> BridgeManager.scanBridges()));
+                button -> this.rebuildBridgeList(false)));
 
         this.addRenderableWidget(new Button(this.width / 2 - 76,
                 this.height - 28,
@@ -83,18 +87,7 @@ public class LightConfigurationScreen extends Screen {
                 new TextComponent("Done"),
                 (button) -> this.minecraft.setScreen(lastScreen)));
 
-        // todo: maybe do something with uh um yeah no this is very bad
-        if (McHue.activeBridge != null) {
-            BridgeEntry entry = new BridgeEntry(McHue.activeBridge, bridgeSelectionList);
-            bridgeSelectionList.children().add(entry);
-            bridgeSelectionList.setSelected(entry);
-            lightSelectionList.setSelectedBridge(entry.getBridge());
-        }
-
-        for (HueBridge bridge : BridgeManager.localBridges) {
-            if (McHue.activeBridge != null && bridge.getBridgeIp().equals(McHue.activeBridge.getBridgeIp())) continue;
-            bridgeSelectionList.children().add(new BridgeEntry(bridge, bridgeSelectionList));
-        }
+        this.rebuildBridgeList(true);
     }
 
     @Override
@@ -118,6 +111,20 @@ public class LightConfigurationScreen extends Screen {
         return false;
     }
 
+    private void rebuildBridgeList(boolean useCache) {
+        bridgeSelectionList.children().clear();
+        lightSelectionList.setSelectedBridge(null);
+
+        for (HueBridge bridge : BridgeManager.getLocalBridges(useCache)) {
+            BridgeEntry entry = new BridgeEntry(bridge, this);
+            bridgeSelectionList.children().add(entry);
+
+            if (McHue.activeBridge != null && bridge.getBridgeId().equals(McHue.activeBridge.getBridgeId())) {
+                setSelectedBridgeEntry(entry);
+            }
+        }
+    }
+
     private void connectBridge() {
         //todo: so if the bridge failed connecting to the lights we are reconnecting from the ground up??? what the shit was I thinking this is spaghetti hell
         if (selectedBridgeEntry.getBridge().passedConnectionTest) {
@@ -137,8 +144,10 @@ public class LightConfigurationScreen extends Screen {
         McHue.activeBridge = null;
     }
 
-    public void setSelectedBridgeEntry(BridgeEntry entry) {
+    public void setSelectedBridgeEntry(@NonNull BridgeEntry entry) {
+        McHue.LOGGER.info(entry.getBridge().isComplete());
         this.selectedBridgeEntry = entry;
+        this.bridgeSelectionList.setSelected(entry);
         this.lightSelectionList.setSelectedBridge(entry.getBridge());
     }
 }
