@@ -6,10 +6,12 @@ import lombok.Setter;
 import java.util.Objects;
 
 public final class LightState {
-    private double r;
-    private double g;
-    private double b;
+    private final double r;
+    private final double g;
+    private final double b;
     public @Getter @Setter boolean powered;
+
+    private boolean isGammaCorrected = false;
 
     /**
      * @param r       the red value between 0 and 255 to set
@@ -29,8 +31,7 @@ public final class LightState {
     }
 
     /**
-     * @param rgb the rgb integer from which to set the red, green, and blue values
-     *            (rgb = 0xRRGGBB)
+     * @param rgb the rgb integer from which to set the red, green, and blue values: 0xRRGGBB.
      *            <p>
      *            The red, green, and blue values are between 0 and 255.
      *            The alpha value is ignored.
@@ -45,9 +46,74 @@ public final class LightState {
      * @param r the red value between 0 and 255.
      * @param g the green value between 0 and 255.
      * @param b the blue value between 0 and 255.
+     *
+     *          <p>The power state is set to true</p>
      */
     public LightState(int r, int g, int b) {
         this(r, g, b, true);
+    }
+
+    /**
+     * @param hue the hue value between 0 and 360.
+     * @param sat the saturation value between 0 and 1.
+     * @param val the value between 0 and 1.
+     */
+    public LightState(float hue, float sat, float val, boolean powered) {
+        if (hue < 0 || hue > 360 || sat < 0 || sat > 1 || val < 0 || val > 1) {
+            throw new IllegalArgumentException("The hue, saturation, or value are not between in their correct ranges");
+        }
+
+        this.isGammaCorrected = true;
+
+        float c = val * sat;
+        float x = c * (1 - Math.abs(hue / 60 % 2 - 1));
+        int hueInterval = (int) (hue / 60);
+
+        float ra, ga, ba;
+        switch (hueInterval) {
+            case 0 -> {
+                ra = c;
+                ga = x;
+                ba = 0;
+            }
+            case 1 -> {
+                ra = x;
+                ga = c;
+                ba = 0;
+            }
+            case 2 -> {
+                ra = 0;
+                ga = c;
+                ba = x;
+            }
+            case 3 -> {
+                ra = 0;
+                ga = x;
+                ba = c;
+            }
+            case 4 -> {
+                ra = x;
+                ga = 0;
+                ba = c;
+            }
+            case 5 -> {
+                ra = c;
+                ga = 0;
+                ba = x;
+            }
+            default -> { // else compiler cries
+                ra = 0;
+                ga = 0;
+                ba = 0;
+            }
+        }
+
+        float m = val - c;
+
+        this.r = ra + m;
+        this.g = ga + m;
+        this.b = ba + m;
+        this.powered = powered;
     }
 
     /**
@@ -56,6 +122,9 @@ public final class LightState {
      * <a href="https://developers.meethue.com/develop/application-design-guidance/color-conversion-formulas-rgb-to-xy-and-back/">Philips Hue API Developer Guide</a>
      */
     private double[] getGammaCorrected() {
+        if (this.isGammaCorrected) {
+            return new double[]{r, g, b};
+        }
         double red = (r > 0.04045f) ? Math.pow((r + 0.055f) / (1.0f + 0.055f), 2.4f) : (r / 12.92f);
         double green = (g > 0.04045f) ? Math.pow((g + 0.055f) / (1.0f + 0.055f), 2.4f) : (g / 12.92f);
         double blue = (b > 0.04045f) ? Math.pow((b + 0.055f) / (1.0f + 0.055f), 2.4f) : (b / 12.92f);
@@ -68,7 +137,6 @@ public final class LightState {
     public double getBrightness() {
         double[] rgb = getGammaCorrected();
         return Math.max(Math.max(rgb[0], rgb[1]), rgb[2]);
-//        return max / 255.0D;
     }
 
     /**
@@ -135,27 +203,6 @@ public final class LightState {
     }
 
     /**
-     * @param r the red value between 0 and 255 to set
-     */
-    public void setRedI(int r) {
-        this.r = r / 255D;
-    }
-
-    /**
-     * @param g the green value between 0 and 255 to set
-     */
-    public void setGreenI(int g) {
-        this.g = g / 255D;
-    }
-
-    /**
-     * @param b the blue value between 0 and 255 to set
-     */
-    public void setBlueI(int b) {
-        this.b = b / 255D;
-    }
-
-    /**
      * @return the red value between 0 and 1
      */
     public float getRedF() {
@@ -174,27 +221,6 @@ public final class LightState {
      */
     public float getBlueF() {
         return (float) b;
-    }
-
-    /**
-     * @param r the red value between 0 and 1 to set
-     */
-    public void setRedF(float r) {
-        this.r = r;
-    }
-
-    /**
-     * @param g the green value between 0 and 1 to set
-     */
-    public void setGreenF(float g) {
-        this.g = g;
-    }
-
-    /**
-     * @param b the blue value between 0 and 1 to set
-     */
-    public void setBlueF(float b) {
-        this.b = b;
     }
 
     @Override

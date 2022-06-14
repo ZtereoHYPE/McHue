@@ -2,9 +2,11 @@ package codes.ztereohype.mchue.util;
 
 import codes.ztereohype.mchue.devices.interfaces.LightState;
 
+import java.awt.color.ColorSpace;
+
 //todo: remove the my when all the code is migrated, and maybe change to xy system?
 public class ColourUtil {
-    //todo: add correction for vision maybe (dark should be less dark, we see in ~logarithmic)
+    //todo: redo this: skew the hue towards the light hue, but change the brightness of the light only depending on the light strenght
     public static LightState blendLightColour(LightState colour, LightState lightColour, float lightEffectStrength, float brigthness) {
         //        get the light 0 -> 1 for each channel    shrink strengh down   shift it up so that max is still 1 but min is lightStrenght
         float lightR = lightColour.getRedF() * lightEffectStrength + (1.0F - lightEffectStrength);
@@ -27,18 +29,31 @@ public class ColourUtil {
         return new LightState(r, g, b);
     }
 
-    public static LightState xyToLightState(float x, float y, int Y, boolean on) {
-        float z = 1.0f - x - y;
+    //todo: figure this shit out lmao
+    public static LightState xyToLightState(float x, float y, float brightness, boolean on) {
+        ColorSpace sRGB = ColorSpace.getInstance(ColorSpace.CS_sRGB);
+
+        float Y = brightness / 255.0F;
         float X = (Y / y) * x;
-        float Z = (Y / y) * z;
+        float Z = (Y / y) * (1.0f - x - y);
 
-        double r =  X * 1.656492f - Y * 0.354851f - Z * 0.255038f;
-        double g = -X * 0.707196f + Y * 1.655397f + Z * 0.036152f;
-        double b =  X * 0.051713f - Y * 0.121364f + Z * 1.011530f;
+        float[] rgb = sRGB.fromCIEXYZ(new float[]{X, Y, Z});
+//
+//        System.out.println(X + " " + Y + " " + Z);
+//
+//        float r =  X * 1.656492f - Y * 0.354851f - Z * 0.255038f;
+//        float g = -X * 0.707196f + Y * 1.655397f + Z * 0.036152f;
+//        float b =  X * 0.051713f - Y * 0.121364f + Z * 1.011530f;
+//
+//        System.out.println(r + " " + g + " " + b);
+//
+//        float r = rgb[0] <= 0.0031308f ? 12.92f * rgb[0] : (float) ((1.0f + 0.055f) * Math.pow(rgb[0], (1.0f / 2.4f)) - 0.055f);
+//        float g = rgb[1] <= 0.0031308f ? 12.92f * rgb[1] : (float) ((1.0f + 0.055f) * Math.pow(rgb[1], (1.0f / 2.4f)) - 0.055f);
+//        float b = rgb[2] <= 0.0031308f ? 12.92f * rgb[2] : (float) ((1.0f + 0.055f) * Math.pow(rgb[2], (1.0f / 2.4f)) - 0.055f);
 
-        r = r <= 0.0031308f ? 12.92f * r : (1.0f + 0.055f) * Math.pow(r, (1.0f / 2.4f)) - 0.055f;
-        g = g <= 0.0031308f ? 12.92f * g : (1.0f + 0.055f) * Math.pow(g, (1.0f / 2.4f)) - 0.055f;
-        b = b <= 0.0031308f ? 12.92f * b : (1.0f + 0.055f) * Math.pow(b, (1.0f / 2.4f)) - 0.055f;
+        float r = rgb[0];
+        float g = rgb[1];
+        float b = rgb[2];
 
         return new LightState((int) (r * 255), (int) (g * 255), (int) (b * 255), on);
     }
