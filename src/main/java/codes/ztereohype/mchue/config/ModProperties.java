@@ -4,14 +4,15 @@ import lombok.Getter;
 
 import java.util.Locale;
 
-public enum ModSettings implements PropertiesEnum {
+public enum ModProperties implements PropertiesEnum {
     IS_ACTIVE("true", false),
     ENTERTAINMENT_ZONES("false", false);
+
 
     final @Getter String defaultValue;
     final @Getter boolean isArray;
 
-    ModSettings(String defaultValue, boolean isArray) {
+    ModProperties(String defaultValue, boolean isArray) {
         this.defaultValue = defaultValue;
         this.isArray = isArray;
     }

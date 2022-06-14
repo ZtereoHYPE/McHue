@@ -1,5 +1,6 @@
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
+	id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -11,6 +12,7 @@ group = project.maven_group
 
 repositories {
 	mavenCentral()
+	maven { url "https://jitpack.io" }
 	maven { url "https://maven.parchmentmc.org" }
 	maven { url "https://maven.terraformersmc.com/" }
 	maven { url "https://maven.shadew.net/" }
@@ -50,6 +52,8 @@ dependencies {
 	// libraries
 	include "net.shadew:json:0.3.1"
 	implementation "net.shadew:json:0.3.1"
+	include "com.github.posicks:mdnsjava:mdnsjava_2.1.5"
+	implementation "com.github.posicks:mdnsjava:mdnsjava_2.1.5"
 
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'

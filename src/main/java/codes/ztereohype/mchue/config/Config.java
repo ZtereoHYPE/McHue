@@ -33,7 +33,7 @@ Structure:
         ip: "127.0.0.1",
         deviceId: "mchue#unknown",
         username: null             ---> this CANNOT HAPPEN; the bridgeid1 object will be deleted if this is the selected bridge ID and the user will be prompted with selecting a bridge from the list of valid ones.
-    },
+    }, // known bridges too perhaps?
     connectedLights: [
         {
             uniqueId: "00:17:88:01:00:17:7a:b0-0b",
@@ -96,7 +96,7 @@ public class Config {
         String key = propertiesEnum.getSettingName();
         String mergedProps = properties.containsKey(key) ? properties.getProperty(key) : defaultProperties.get(key);
 
-        return mergedProps.split("[,]", 0);
+        return mergedProps.split(",", 0);
     }
 
     public void initialise() throws IOException {
@@ -131,7 +131,7 @@ public class Config {
             properties.store(Files.newOutputStream(configPath), HEADER_COMMENT);
         } catch (IOException e) {
             e.printStackTrace();
-            McHue.LOGGER.log(Level.ERROR, "There was an error trying to save the config. Please contact the developer and send them the log.");
+            McHue.LOGGER.error("There was an error trying to save the config. Please contact the developer and send them the log.");
         }
     }
 }

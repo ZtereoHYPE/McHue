@@ -2,7 +2,7 @@ package codes.ztereohype.mchue.gui.widget.entries;
 
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.devices.HueBridge;
-import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
+import codes.ztereohype.mchue.gui.screens.LightSelectionScreen;
 import codes.ztereohype.mchue.util.DrawingUtil;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -20,13 +20,13 @@ import org.jetbrains.annotations.NotNull;
 public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final @Getter HueBridge bridge;
-    private final BridgeSelectionList parent;
+    private final LightSelectionScreen parentScreen;
     private final ResourceLocation BRIDGE_ICON = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_icon.png");
     private boolean connected = false;
 
-    public BridgeEntry(HueBridge bridge, BridgeSelectionList parent) {
+    public BridgeEntry(HueBridge bridge, LightSelectionScreen parentScreen) {
         this.bridge = bridge;
-        this.parent = parent;
+        this.parentScreen = parentScreen;
         if (this.bridge.passedConnectionTest) connected = true;
     }
 
@@ -80,7 +80,7 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
 
     @Override
     public boolean mouseClicked(double v, double v1, int i) {
-        parent.setSelected(this);
+        parentScreen.setSelectedBridgeEntry(this);
         return true;
     }
 

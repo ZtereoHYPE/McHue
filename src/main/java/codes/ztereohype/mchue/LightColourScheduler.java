@@ -20,8 +20,8 @@ public class LightColourScheduler {
         LightState colour;
         try {
             colour = cg.getColour();
-        } catch ( Exception e ) {
-            McHue.LOGGER.error( "Caught exception in LightColourScheduler. StackTrace:\n" + Arrays.toString(e.getStackTrace()));
+        } catch (Exception e) {
+            McHue.LOGGER.error("Caught exception in LightColourScheduler. StackTrace:\n" + Arrays.toString(e.getStackTrace()));
             stopUpdater();
             return;
         }

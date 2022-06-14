@@ -6,7 +6,9 @@ import net.shadew.json.JsonNode;
 
 import javax.net.ssl.SSLContext;
 import java.io.IOException;
-import java.net.*;
+import java.net.DatagramSocket;
+import java.net.SocketException;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -90,10 +92,10 @@ public class NetworkUtil {
         extraHeaders.add("application/json");
 
         var request = HttpRequest.newBuilder()
-                                         .uri(URI.create(endpoint))
-                                         .headers(extraHeaders.toArray(String[]::new))
-                                         .GET()
-                                         .build();
+                                 .uri(URI.create(endpoint))
+                                 .headers(extraHeaders.toArray(String[]::new))
+                                 .GET()
+                                 .build();
 
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());

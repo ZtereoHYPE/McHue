@@ -2,10 +2,10 @@ package codes.ztereohype.mchue;
 
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.config.Config;
-import codes.ztereohype.mchue.config.ModSettings;
+import codes.ztereohype.mchue.config.ModProperties;
 import codes.ztereohype.mchue.devices.BridgeManager;
 import codes.ztereohype.mchue.devices.HueBridge;
-import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
+import codes.ztereohype.mchue.gui.screens.LightSelectionScreen;
 import lombok.Getter;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
@@ -24,9 +24,10 @@ import java.util.Optional;
 public class McHue implements ClientModInitializer {
     public static final String MOD_ID = "mchue";
     public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
+    public static final BridgeManager BRIDGE_MANAGER = new BridgeManager();
 
     public static HueBridge activeBridge;
-    public static LightConfigurationScreen settingsScreen;
+    public static LightSelectionScreen settingsScreen;
 
     private String toastTitle;
     private @Getter static McHue initialisedInstance;
@@ -42,7 +43,7 @@ public class McHue implements ClientModInitializer {
 
     public static Config SETTINGS_CONFIG = new Config(Paths.get("./config/mchue.config"),
             "McHue config containing general mod settings",
-            Map.of(ModSettings.IS_ACTIVE.getSettingName(), ModSettings.IS_ACTIVE.getDefaultValue()));
+            Map.of(ModProperties.IS_ACTIVE.getSettingName(), ModProperties.IS_ACTIVE.getDefaultValue()));
 
     @Override
     public void onInitializeClient() {
@@ -60,17 +61,15 @@ public class McHue implements ClientModInitializer {
     }
 
     private void setupBridgeConnection() {
-        BridgeManager.scanBridges();
-
         boolean validSavedBridge = !(Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME), "null")
                 || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null"));
 
-        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.localBridges.stream()
-                                                                                .filter(b -> b.getBridgeIp()
-                                                                                              .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
-                                                                                .findFirst();
+        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.getLocalBridges(false).stream()
+                                                                   .filter(b -> b.getBridgeIp()
+                                                                                 .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
+                                                                   .findFirst();
 
         if (validSavedBridge && savedBridgeFoundLocally.isPresent()) {
             HueBridge connectedBridge = savedBridgeFoundLocally.get();
@@ -87,7 +86,7 @@ public class McHue implements ClientModInitializer {
     }
 
     //todo: fix this bs -_-
-    public void displayToastIfYouShould() {
+    public void displayToast() {
         if (toastTitle == null) return;
 //        Minecraft.getInstance().
         Minecraft.getInstance().getToasts()
@@ -95,6 +94,6 @@ public class McHue implements ClientModInitializer {
     }
 
     public boolean isEntertainmentMode() {
-        return Boolean.getBoolean(SETTINGS_CONFIG.getProperty(ModSettings.ENTERTAINMENT_ZONES));
+        return Boolean.getBoolean(SETTINGS_CONFIG.getProperty(ModProperties.ENTERTAINMENT_ZONES));
     }
 }

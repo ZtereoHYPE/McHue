@@ -4,7 +4,6 @@ import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.mixin.LightTextureAccessor;
 import codes.ztereohype.mchue.util.ColourUtil;
 import com.mojang.blaze3d.platform.NativeImage;
-import com.mojang.math.Vector3f;
 import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
@@ -21,10 +20,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.GrassBlock;
-import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.LiquidBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.WaterFluid;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -58,7 +55,7 @@ public class ColourGrabber {
         double phi = Math.PI * (3 - Math.sqrt(5));
 
         //todo: fix this to accept 3 parameters (floor walls cieling)
-        for (int i = samples/4; i < samples; i++) {
+        for (int i = samples / 4; i < samples; i++) {
             double y;
 
             if (floor) {
@@ -84,8 +81,9 @@ public class ColourGrabber {
 
     /**
      * Gets the colour of the block at the given position
+     *
      * @param type the {@link ColorResolver} to use, obtained from {@link BiomeColors}
-     * @param pos the BlockPos to get the colour of the biome blend from
+     * @param pos  the BlockPos to get the colour of the biome blend from
      * @return the colour of the block at the given position
      */
     public LightState getBiomeBlendColour(ColorResolver type, BlockPos pos) {
@@ -201,7 +199,9 @@ public class ColourGrabber {
             LightState colour1 = getBlockColour(mostCommonBlocks.get(0).getKey(), playerLocation);
             LightState colour2 = getBlockColour(mostCommonBlocks.get(1).getKey(), playerLocation);
 
-            float ratio = mostCommonBlocks.get(1).getValue() / (float) (mostCommonBlocks.get(0).getValue() + mostCommonBlocks.get(1).getValue());
+            float ratio = mostCommonBlocks.get(1).getValue() / (float) (mostCommonBlocks.get(0)
+                                                                                        .getValue() + mostCommonBlocks.get(1)
+                                                                                                                      .getValue());
 
             return ColourUtil.lerpColours(colour1, colour2, ratio);
         }

@@ -1,6 +1,6 @@
 package codes.ztereohype.mchue.gui.widget;
 
-import codes.ztereohype.mchue.gui.screens.LightConfigurationScreen;
+import codes.ztereohype.mchue.gui.screens.LightSelectionScreen;
 import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -17,11 +17,11 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Objects;
 
 public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
-    private final LightConfigurationScreen parent;
+    private final LightSelectionScreen parent;
 
     private Entry<BridgeEntry> hovered;
 
-    public BridgeSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightConfigurationScreen parent) {
+    public BridgeSelectionList(Minecraft minecraft, int x0, int x1, int y0, int y1, int itemHeight, LightSelectionScreen parent) {
         super(minecraft, x1 - x0, y1 - y0, y0, y1, itemHeight);
         this.x0 = x0;
         this.x1 = x1;
@@ -31,7 +31,6 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
     @Override
     public void setSelected(BridgeEntry entry) {
         super.setSelected(entry);
-        parent.setSelectedBridgeEntry(entry);
     }
 
     //todo: accessibility (this is a test?)
@@ -169,12 +168,11 @@ public class BridgeSelectionList extends AbstractSelectionList<BridgeEntry> {
 
     @Override
     protected void renderList(@NotNull PoseStack poseStack, int x, int y, int mouseX, int mouseY, float partialTick) {
-        int listLength = this.getItemCount();
         Tesselator tesselator = Tesselator.getInstance();
         BufferBuilder bufferBuilder = tesselator.getBuilder();
 
         // for each entry
-        for (int i = 0; i < listLength; ++i) {
+        for (int i = 0; i < this.getItemCount(); ++i) {
             int entryTop = this.getRowTop(i);
             int entryBottom = this.getRowBottom(i);
 
