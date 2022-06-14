@@ -1,6 +1,7 @@
 package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.McHue;
+import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.interfaces.BridgeConnectionUpdate;
 import codes.ztereohype.mchue.devices.interfaces.BridgeResponse;
 import codes.ztereohype.mchue.util.NetworkUtil;
@@ -10,6 +11,7 @@ import net.shadew.json.JsonPath;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Nullable;
 import org.xbill.mDNS.Lookup;
 import org.xbill.mDNS.ServiceInstance;
 
@@ -17,10 +19,7 @@ import java.io.IOException;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -55,6 +54,10 @@ public class BridgeManager {
                 String ip = Arrays.stream(service.getAddresses()).filter(a -> a instanceof Inet4Address).findFirst()
                                   .get().getHostAddress();
                 String id = (String) service.getTextAttributes().get("bridgeid");
+
+                // sometimes we get "ghost" copies of the bridges without attributes so better make sure
+                if (ip == null || id == null) continue;
+
                 bridgeCache.add(new HueBridge(id, ip));
             }
         } catch (IOException e) {
@@ -85,30 +88,57 @@ public class BridgeManager {
     }
 
     //todo: remake this from scratch to try and read the cnofig first and call when mchue launches instead of doing on the mcgue calss
-    public void startInitialBridgeConnection(HueBridge bridge, Consumer<BridgeConnectionUpdate> updateMethod) {
-        // Already complete bridge check
-        if (bridge.isComplete()) return;
+    //returns true if the bridge is already completed after the execution of it
+    public boolean completeBridge(HueBridge bridge) {
+        return completeBridge(bridge, null);
+    }
 
-        if (bridge.getUsername() == null) {
-            McHue.LOGGER.debug("No id, generating it.");
+    public boolean completeBridge(HueBridge bridge, @Nullable Consumer<BridgeConnectionUpdate> updateMethod) {
+        if (bridge.isComplete()) return true;
+
+        boolean validSavedBridge = !(Objects.equals(McHue.BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP), "null")
+                || Objects.equals(McHue.BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID), "null")
+                || Objects.equals(McHue.BRIDGE_DATA.getProperty(BridgeProperties.USERNAME), "null")
+                || Objects.equals(McHue.BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null")
+                || Objects.equals(McHue.BRIDGE_DATA.getProperty(BridgeProperties.CLIENT_KEY), "null"));
+
+        boolean bridgeIsInConfig = validSavedBridge && McHue.BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID)
+                                                                        .equals(bridge.getBridgeId());
+
+        DEVICE_ID_CHECK:
+        if (bridge.getDeviceId() == null) {
+            if (bridgeIsInConfig) {
+                bridge.setDeviceId(McHue.BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
+                break DEVICE_ID_CHECK;
+            }
+
+            McHue.LOGGER.debug("No device identifier, generating it.");
             try {
-                bridge.setUsername("mchue#" + InetAddress.getLocalHost().getHostName());
+                bridge.setDeviceId("mchue#" + InetAddress.getLocalHost().getHostName());
             } catch (UnknownHostException e) {
-                bridge.setUsername("mchue#unknown");
+                bridge.setDeviceId("mchue#unknown");
             }
         }
 
-        if (bridge.getToken() == null) {
-            McHue.LOGGER.log(Level.INFO, "No username, generating it.");
+        if (bridge.getUsername() == null || bridge.getClientKey() == null) {
+            if (bridgeIsInConfig) {
+                bridge.setUsername(McHue.BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
+                bridge.setClientKey(McHue.BRIDGE_DATA.getProperty(BridgeProperties.CLIENT_KEY));
+                return true;
+            }
+
+            McHue.LOGGER.log(Level.INFO, "No username or client key, generating it.");
 
             String url = "http://" + bridge.getBridgeIp() + "/api";
-            String data = "{\"devicetype\":\"" + bridge.getUsername() + "\", \"generateclientkey\":true}";
+            String data = "{\"devicetype\":\"" + bridge.getDeviceId() + "\", \"generateclientkey\":true}";
 
             // only valid for 30 attempts
             UsernameCreator uc = new UsernameCreator(url, data, bridge, updateMethod);
 
             t = scheduler.scheduleAtFixedRate(uc, 0, DEFAULT_POLL_INTERVAL, TimeUnit.SECONDS);
+            return false;
         }
+        return true;
     }
 
     public void cancelConnection() {
@@ -122,7 +152,7 @@ public class BridgeManager {
         private final Consumer<BridgeConnectionUpdate> updateMethod;
         private int attempt = 1;
 
-        protected UsernameCreator(String url, String data, HueBridge bridge, Consumer<BridgeConnectionUpdate> updateMethod) {
+        protected UsernameCreator(String url, String data, HueBridge bridge, @Nullable Consumer<BridgeConnectionUpdate> updateMethod) {
             this.url = url;
             this.data = data;
             this.bridge = bridge;
@@ -132,7 +162,8 @@ public class BridgeManager {
         @Override
         public void run() {
             if (attempt >= MAX_ATTEMPTS) {
-                updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.TIME_UP, null, null));
+                if (updateMethod != null)
+                    updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.TIME_UP, null, null));
                 t.cancel(false);
                 return;
             }
@@ -140,24 +171,28 @@ public class BridgeManager {
             //todo: add more useful solutions to exceptions eg. "Are you connected to internet?"
             Optional<JsonNode> response = NetworkUtil.postJson(url, data);
             if (response.isEmpty()) {
-                updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.FAILURE, null, "Failed sending the request to the bridge"));
+                if (updateMethod != null)
+                    updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.FAILURE, null, "Failed sending the request to the bridge"));
                 return;
             }
 
             JsonNode parsedResponse = response.get().query("[0]");
             if (parsedResponse.has("success")) {
                 scheduler.shutdown();
-                bridge.setToken(parsedResponse.query("success.username").asString());
+                bridge.setUsername(parsedResponse.query("success.username").asString());
                 bridge.setClientKey(parsedResponse.query("success.clientkey").asString());
 
-                updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.SUCCESS, null, null));
+                if (updateMethod != null)
+                    updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.SUCCESS, null, null));
 
             } else if (parsedResponse.has("error") && parsedResponse.query("error.type").asInt() == 101) {
-                updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.PRESS_BUTTON, DEFAULT_POLL_INTERVAL * (MAX_ATTEMPTS - attempt), null));
+                if (updateMethod != null)
+                    updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.PRESS_BUTTON, DEFAULT_POLL_INTERVAL * (MAX_ATTEMPTS - attempt), null));
 
             } else {
                 LOGGER.error("The bridge responded in an unknown way: " + parsedResponse);
-                updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.FAILURE, null, "The bridge responded in an unknown way. Check logs for more info."));
+                if (updateMethod != null)
+                    updateMethod.accept(new BridgeConnectionUpdate(BridgeResponse.FAILURE, null, "The bridge responded in an unknown way. Check logs for more info."));
             }
             attempt++;
         }

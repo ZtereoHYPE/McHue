@@ -27,7 +27,6 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
     public BridgeEntry(HueBridge bridge, LightSelectionScreen parentScreen) {
         this.bridge = bridge;
         this.parentScreen = parentScreen;
-        if (this.bridge.passedConnectionTest) connected = true;
     }
 
     @Override

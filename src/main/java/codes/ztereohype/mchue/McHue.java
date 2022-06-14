@@ -18,8 +18,6 @@ import org.apache.logging.log4j.Logger;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 public class McHue implements ClientModInitializer {
     public static final String MOD_ID = "mchue";
@@ -61,28 +59,19 @@ public class McHue implements ClientModInitializer {
     }
 
     private void setupBridgeConnection() {
-        boolean validSavedBridge = !(Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP), "null")
-                || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID), "null")
-                || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME), "null")
-                || Objects.equals(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER), "null"));
+        boolean savedBridgeFoundLocally = BridgeManager.getLocalBridges(false).stream()
+                                                       .anyMatch(b -> b.getBridgeId()
+                                                                       .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID)));
 
-        Optional<HueBridge> savedBridgeFoundLocally = BridgeManager.getLocalBridges(false).stream()
-                                                                   .filter(b -> b.getBridgeIp()
-                                                                                 .equals(BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP)))
-                                                                   .findFirst();
+        if (savedBridgeFoundLocally) {
+            String id = BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_ID);
+            String ip = BRIDGE_DATA.getProperty(BridgeProperties.BRIDGE_IP);
+            activeBridge = new HueBridge(id, ip);
 
-        if (validSavedBridge && savedBridgeFoundLocally.isPresent()) {
-            HueBridge connectedBridge = savedBridgeFoundLocally.get();
-
-            connectedBridge.setUsername(BRIDGE_DATA.getProperty(BridgeProperties.DEVICE_INDENTIFIER));
-            connectedBridge.setToken(BRIDGE_DATA.getProperty(BridgeProperties.USERNAME));
-            connectedBridge.setClientKey(BRIDGE_DATA.getProperty(BridgeProperties.CLIENT_KEY));
-
-            McHue.activeBridge = connectedBridge;
-        } else {
-            // todo: maybe change to more appropriate messages?
-            toastTitle = validSavedBridge ? "Could not find Bridge." : "Set up the Hue Bridge.";
+            BRIDGE_MANAGER.completeBridge(activeBridge);
         }
+
+        toastTitle = !savedBridgeFoundLocally ? "Could not find Bridge." : "Set up the Hue Bridge.";
     }
 
     //todo: fix this bs -_-

@@ -7,7 +7,6 @@ import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
 import codes.ztereohype.mchue.gui.widget.LightSelectionList;
 import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.vertex.PoseStack;
-import lombok.NonNull;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
@@ -120,20 +119,18 @@ public class LightSelectionScreen extends Screen {
             bridgeSelectionList.children().add(entry);
 
             if (McHue.activeBridge != null && bridge.getBridgeId().equals(McHue.activeBridge.getBridgeId())) {
+                McHue.BRIDGE_MANAGER.completeBridge(bridge);
                 setSelectedBridgeEntry(entry);
+                connectBridge();
             }
         }
     }
 
     private void connectBridge() {
         //todo: so if the bridge failed connecting to the lights we are reconnecting from the ground up??? what the shit was I thinking this is spaghetti hell
-        if (selectedBridgeEntry.getBridge().passedConnectionTest) {
-            McHue.activeBridge = selectedBridgeEntry.getBridge();
-            selectedBridgeEntry.setConnected(true);
-        } else {
-            this.bridgeConnectionScreen = new BridgeConnectionScreen(this, selectedBridgeEntry);
-            minecraft.setScreen(bridgeConnectionScreen);
-        }
+        McHue.activeBridge = selectedBridgeEntry.getBridge();
+        selectedBridgeEntry.setConnected(true);
+        this.lightSelectionList.setSelectedBridge(McHue.activeBridge);
     }
 
     private void disconnectBridge() {
@@ -142,12 +139,11 @@ public class LightSelectionScreen extends Screen {
         selectedBridgeEntry.setConnected(false);
         setSelectedBridgeEntry(null);
         McHue.activeBridge = null;
+        this.lightSelectionList.setSelectedBridge(null);
     }
 
-    public void setSelectedBridgeEntry(@NonNull BridgeEntry entry) {
-        McHue.LOGGER.info(entry.getBridge().isComplete());
+    public void setSelectedBridgeEntry(BridgeEntry entry) {
         this.selectedBridgeEntry = entry;
         this.bridgeSelectionList.setSelected(entry);
-        this.lightSelectionList.setSelectedBridge(entry.getBridge());
     }
 }

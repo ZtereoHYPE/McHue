@@ -32,8 +32,8 @@ public class HueLight {
         this.id = id;
         this.index = index;
         this.name = name;
-        this.POST_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getToken() + "/lights/" + this.index + "/state";
-        this.GET_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getToken() + "/lights/" + this.index;
+        this.POST_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getUsername() + "/lights/" + this.index + "/state";
+        this.GET_ENDPOINT = "http://" + parentBridge.getBridgeIp() + "/api/" + parentBridge.getUsername() + "/lights/" + this.index;
     }
 
     public boolean setColour(@NotNull LightState colour) {

@@ -86,7 +86,7 @@ public class BridgeConnectionScreen extends Screen {
 
     private void startConnection() {
         currentImage = BRIDGE_CONNECTING_IMAGE;
-        McHue.BRIDGE_MANAGER.startInitialBridgeConnection(connectingBridge, this::connectionUpdate);
+        McHue.BRIDGE_MANAGER.completeBridge(connectingBridge, this::connectionUpdate);
     }
 
     private void connectionUpdate(BridgeConnectionUpdate updateInfo) {
@@ -104,8 +104,8 @@ public class BridgeConnectionScreen extends Screen {
 
                 McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, connectingBridge.getBridgeId());
                 McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, connectingBridge.getBridgeIp());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, connectingBridge.getUsername());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, connectingBridge.getToken());
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, connectingBridge.getDeviceId());
+                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, connectingBridge.getUsername());
                 McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, connectingBridge.getClientKey());
             }
             case PRESS_BUTTON -> setCountdown(updateInfo.timeLeft() + "s remaining...");

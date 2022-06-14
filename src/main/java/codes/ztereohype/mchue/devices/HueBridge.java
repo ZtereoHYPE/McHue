@@ -14,10 +14,9 @@ import java.util.stream.Collectors;
 public class HueBridge {
     private final @Getter String bridgeId;
     private final @Getter String bridgeIp;
-    public boolean passedConnectionTest = false;
     public List<HueLight> connectedLights = new ArrayList<>();
+    private @Getter String deviceId;
     private @Getter String username;
-    private @Getter String token;
     private @Getter String clientKey;
 
     private final JsonPath NAME_PATH = JsonPath.parse("name");
@@ -28,34 +27,25 @@ public class HueBridge {
         this.bridgeIp = ip;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-        if (this.token != null && this.clientKey != null) {
-            passedConnectionTest = scanLights();
-        }
+    public void setDeviceId(String deviceId) {
+        this.deviceId = deviceId;
     }
 
-    public void setToken(String token) {
-        this.token = token;
-        if (this.username != null && this.clientKey != null) {
-            passedConnectionTest = scanLights();
-        }
+    public void setUsername(String username) {
+        this.username = username;
     }
 
     public void setClientKey(String clientKey) {
         this.clientKey = clientKey;
-        if (this.username != null && this.token != null) {
-            passedConnectionTest = scanLights();
-        }
     }
 
     public boolean isComplete() {
-        return token != null && username != null && bridgeIp != null && bridgeId != null;
+        return username != null && deviceId != null && bridgeIp != null && bridgeId != null;
     }
 
     public boolean scanLights() {
         if (!isComplete()) return false;
-        String endpoint = "http://" + getBridgeIp() + "/api/" + token + "/lights";
+        String endpoint = "http://" + getBridgeIp() + "/api/" + username + "/lights";
         Optional<JsonNode> response = NetworkUtil.getJson(endpoint);
 
         if (response.isEmpty()) {
