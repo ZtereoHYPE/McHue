@@ -11,11 +11,14 @@
     "sources": "https://github.com/ZtereoHYPE/McHue"
   },
   "license": "TBA",
-  "icon": "assets/mchue/textures/gui/bridge.png",
+  "icon": "assets/mchue/textures/gui/bridge_icon.png",
   "environment": "client",
   "entrypoints": {
     "client": [
       "codes.ztereohype.mchue.McHue"
+    ],
+    "modmenu": [
+      "codes.ztereohype.mchue.compat.ModMenuSettingsApi"
     ]
   },
   "mixins": [
