@@ -128,9 +128,14 @@ public class LightSelectionScreen extends Screen {
 
     private void connectBridge() {
         //todo: so if the bridge failed connecting to the lights we are reconnecting from the ground up??? what the shit was I thinking this is spaghetti hell
-        McHue.activeBridge = selectedBridgeEntry.getBridge();
-        selectedBridgeEntry.setConnected(true);
-        this.lightSelectionList.setSelectedBridge(McHue.activeBridge);
+        if (selectedBridgeEntry.getBridge().isComplete()) {
+            McHue.activeBridge = selectedBridgeEntry.getBridge();
+            selectedBridgeEntry.setConnected(true);
+            this.lightSelectionList.setSelectedBridge(McHue.activeBridge);
+        } else {
+            this.bridgeConnectionScreen = new BridgeConnectionScreen(this, selectedBridgeEntry);
+            minecraft.setScreen(bridgeConnectionScreen);
+        }
     }
 
     private void disconnectBridge() {
