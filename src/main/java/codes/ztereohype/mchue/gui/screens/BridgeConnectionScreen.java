@@ -15,23 +15,25 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-//todo: changing this into a popup window like 1.8 reset custom world settings would be nice
 public class BridgeConnectionScreen extends Screen {
     public final String TITLE = "Connect to the Bridge";
     public final HueBridge connectingBridge;
     public final BridgeEntry connectingBridgeEntry;
     private final Screen lastScreen;
 
-    private final int IMAGE_SIZE = 140;
-    private final ResourceLocation BRIDGE_CONNECTING_IMAGE = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_press_button.png");
-    private final ResourceLocation BRIDGE_SUCCESS_IMAGE = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_connection_success.png");
-    private final ResourceLocation BRIDGE_FAILED_IMAGE = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_connection_failed.png");
+    private static final int IMAGE_SIZE = 192;
+    private static final ResourceLocation BRIDGE_IMAGE = new ResourceLocation(McHue.MOD_ID, "textures/gui/bridge_large.png");
+    private static final ResourceLocation CHECKMARK = new ResourceLocation(McHue.MOD_ID, "textures/gui/checkmark.png");
+    private static final ResourceLocation CROSS = new ResourceLocation(McHue.MOD_ID, "textures/gui/cross.png");
+    private static final ResourceLocation ARROW = new ResourceLocation(McHue.MOD_ID, "textures/gui/arrow.png");
 
     private @Setter String subtitle = "Press the bridge Pushlink button.";
     private @Setter String countdown = "60s remaining...";
-    private ResourceLocation currentImage = BRIDGE_CONNECTING_IMAGE;
+    private ResourceLocation currentDecoration = ARROW;
+    private byte blink;
 
     private Button tryAgainButton;
     private Button backButton;
@@ -68,15 +70,33 @@ public class BridgeConnectionScreen extends Screen {
     }
 
     @Override
+    public void tick() {
+        super.tick();
+
+        blink+=10;
+    }
+
+    @Override
     public void render(@NotNull PoseStack poseStack, int mouseX, int mouseY, float delta) {
         this.renderDirtBackground(0);
 
         super.render(poseStack, mouseX, mouseY, delta);
 
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, currentImage);
+        RenderSystem.setShaderTexture(0, BRIDGE_IMAGE);
         RenderSystem.enableBlend();
         GuiComponent.blit(poseStack, this.width / 2 - IMAGE_SIZE / 2, this.height / 2 - IMAGE_SIZE / 2 + 6, 0.0F, 0.0F, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE);
+        RenderSystem.disableBlend();
+
+        float uOffset = 0;
+        if (currentDecoration == ARROW) {
+            uOffset = blink > 0 ? 40F : 55F;
+        }
+
+        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.setShaderTexture(0, currentDecoration);
+        RenderSystem.enableBlend();
+        GuiComponent.blit(poseStack, this.width / 2 - IMAGE_SIZE / 2, this.height / 2 - IMAGE_SIZE / 2 + 6, uOffset, 1.0F, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE);
         RenderSystem.disableBlend();
 
         drawCenteredString(poseStack, this.font, this.TITLE, this.width / 2, 8, 16777215);
@@ -85,7 +105,7 @@ public class BridgeConnectionScreen extends Screen {
     }
 
     private void startConnection() {
-        currentImage = BRIDGE_CONNECTING_IMAGE;
+        currentDecoration = ARROW;
         McHue.BRIDGE_MANAGER.completeBridge(connectingBridge, this::connectionUpdate);
     }
 
@@ -98,7 +118,7 @@ public class BridgeConnectionScreen extends Screen {
                 setSubtitle("Connection completed with Success!");
                 setCountdown("You may go back to the previous screen.");
 
-                currentImage = BRIDGE_SUCCESS_IMAGE;
+                currentDecoration = CHECKMARK;
                 McHue.activeBridge = connectingBridge;
                 backButton.setMessage(new TextComponent("Done"));
 
@@ -114,14 +134,14 @@ public class BridgeConnectionScreen extends Screen {
                 setSubtitle("The button was not pressed in 60 seconds.");
                 setCountdown("You can press Try Again to... try again.");
 
-                currentImage = BRIDGE_FAILED_IMAGE;
+                currentDecoration = CROSS;
                 tryAgainButton.active = true;
             }
             case FAILURE -> {
                 setSubtitle(updateInfo.errorMessage());
                 setCountdown("");
 
-                currentImage = BRIDGE_FAILED_IMAGE;
+                currentDecoration = CROSS;
                 tryAgainButton.active = true;
             }
         }

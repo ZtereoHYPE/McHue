@@ -23,10 +23,10 @@ public class HueLight {
 
     private LightState lastState;
 
-    private final JsonPath ON_PATH = JsonPath.parse("state.on");
-    private final JsonPath BRI_PATH = JsonPath.parse("state.bri");
-    private final JsonPath HUE_PATH = JsonPath.parse("state.hue");
-    private final JsonPath SAT_PATH = JsonPath.parse("state.sat");
+    private static final JsonPath ON_PATH = JsonPath.parse("state.on");
+    private static final JsonPath BRI_PATH = JsonPath.parse("state.bri");
+    private static final JsonPath HUE_PATH = JsonPath.parse("state.hue");
+    private static final JsonPath SAT_PATH = JsonPath.parse("state.sat");
 
     public HueLight(String id, String index, String name, HueBridge parentBridge) {
         this.id = id;

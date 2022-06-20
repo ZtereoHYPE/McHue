@@ -30,7 +30,7 @@ public class McHue implements ClientModInitializer {
     private String toastTitle;
     private @Getter static McHue initialisedInstance;
 
-    public static Config BRIDGE_DATA = new Config(Paths.get("./.mchue/bridge_data.config"),
+    public static final Config BRIDGE_DATA = new Config(Paths.get("./.mchue/bridge_data.config"),
             "McHue config containing sensitive data about the bridge. WARNING: DO NOT SHARE THIS UNDER ANY CIRCUMSTANCES",
             Map.of(BridgeProperties.BRIDGE_ID.getSettingName(), BridgeProperties.BRIDGE_ID.getDefaultValue(),
                     BridgeProperties.BRIDGE_IP.getSettingName(), BridgeProperties.BRIDGE_IP.getDefaultValue(),
@@ -39,7 +39,7 @@ public class McHue implements ClientModInitializer {
                     BridgeProperties.CLIENT_KEY.getSettingName(), BridgeProperties.CLIENT_KEY.getDefaultValue(),
                     BridgeProperties.CONNECTED_LIGHTS.getSettingName(), BridgeProperties.CONNECTED_LIGHTS.getDefaultValue()));
 
-    public static Config SETTINGS_CONFIG = new Config(Paths.get("./config/mchue.config"),
+    public static final Config SETTINGS_CONFIG = new Config(Paths.get("./config/mchue.config"),
             "McHue config containing general mod settings",
             Map.of(ModProperties.IS_ACTIVE.getSettingName(), ModProperties.IS_ACTIVE.getDefaultValue()));
 

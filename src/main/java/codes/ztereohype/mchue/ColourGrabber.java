@@ -4,6 +4,8 @@ import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.mixin.LightTextureAccessor;
 import codes.ztereohype.mchue.util.ColourUtil;
 import com.mojang.blaze3d.platform.NativeImage;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
@@ -40,6 +42,11 @@ public class ColourGrabber {
     private final TagKey<Block> CAVE_TAG = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation("mchue", "cave_blocks"));
     private final Vec3[] caveCheckVectors;
 
+
+    //trash
+    private final List<Integer> skyLights = new IntArrayList();
+    private final List<Integer> blockLights = new IntArrayList();
+
     public ColourGrabber() {
         this.caveCheckVectors = getFibSphereVectors(75, false);
         this.floorVectors = getFibSphereVectors(50, true);
@@ -54,7 +61,7 @@ public class ColourGrabber {
         List<Vec3> vectors = new ArrayList<>();
         double phi = Math.PI * (3 - Math.sqrt(5));
 
-        //todo: fix this to accept 3 parameters (floor walls cieling)
+        //todo: fix this to accept 4 parameters (floor walls cieling full)
         for (int i = samples / 4; i < samples; i++) {
             double y;
 
@@ -93,9 +100,16 @@ public class ColourGrabber {
     public LightState getLightMultiplier() {
         Level clientLevel = this.minecraft.level;
         BlockPos playerLocation = getPlayerLocation();
-
-        int skyLight = clientLevel.getBrightness(LightLayer.SKY, playerLocation);
-        int blockLight = clientLevel.getBrightness(LightLayer.BLOCK, playerLocation);
+        int skyLight = 0;
+        int blockLight = 0;
+        for (int light : skyLights) {
+            skyLight += light;
+        }
+        for (int light : blockLights) {
+            blockLight += light;
+        }
+        skyLight /= skyLights.size();
+        blockLight /= blockLights.size();
 
         NativeImage lightPixels = ((LightTextureAccessor) minecraft.gameRenderer.lightTexture()).getLightPixels();
 
@@ -145,13 +159,23 @@ public class ColourGrabber {
 
             if (hitResult.getType() == HitResult.Type.BLOCK) {
                 int skyLight = level.getBrightness(LightLayer.SKY, hitResult.getBlockPos());
+                int blockLight = level.getBrightness(LightLayer.BLOCK, hitResult.getBlockPos());
 
                 // look for the block that potentially has access to skylight around the hit one if we have 0 skylight (eg air next to cave wall)
+                //todo: this is flawed as it will pick the bigger one always, do a +1 check to avoid most cases
                 if (skyLight == 0) {
                     for (Direction direction : Direction.values()) {
                         skyLight = Math.max(skyLight, level.getBrightness(LightLayer.SKY, hitResult.getBlockPos().relative(direction)));
                     }
                 }
+                if (blockLight == 0) {
+                    for (Direction direction : Direction.values()) {
+                        blockLight = Math.max(skyLight, level.getBrightness(LightLayer.BLOCK, hitResult.getBlockPos().relative(direction)));
+                    }
+                }
+
+                skyLights.add(skyLight);
+                blockLights.add(blockLight);
 
                 BlockState hitBlock = level.getBlockState(hitResult.getBlockPos());
 
@@ -185,7 +209,6 @@ public class ColourGrabber {
                                                                                .toList());
         // sort by count reversed
         mostCommonBlocks.sort(Map.Entry.comparingByValue(Comparator.reverseOrder()));
-
 
         float caveness = checkCave();
         if (mostCommonBlocks.isEmpty()) return caveness > 0 ? getCaveColour(caveness) : getSkyColour();
