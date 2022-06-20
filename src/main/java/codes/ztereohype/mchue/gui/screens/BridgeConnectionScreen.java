@@ -12,14 +12,11 @@ import lombok.Setter;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
 public class BridgeConnectionScreen extends Screen {
-    public final String TITLE = "Connect to the Bridge";
     public final HueBridge connectingBridge;
     public final BridgeEntry connectingBridgeEntry;
     private final Screen lastScreen;
@@ -41,7 +38,7 @@ public class BridgeConnectionScreen extends Screen {
     private boolean hasStartedConnection = false;
 
     public BridgeConnectionScreen(Screen lastScreen, BridgeEntry connectingBridgeEntry) {
-        super(Component.nullToEmpty("Connect to the Bridge"));
+        super(new TextComponent("Connect to the Bridge"));
         this.lastScreen = lastScreen;
         this.connectingBridgeEntry = connectingBridgeEntry;
         this.connectingBridge = connectingBridgeEntry.getBridge();
@@ -72,7 +69,6 @@ public class BridgeConnectionScreen extends Screen {
     @Override
     public void tick() {
         super.tick();
-
         blink+=10;
     }
 
@@ -99,7 +95,7 @@ public class BridgeConnectionScreen extends Screen {
         GuiComponent.blit(poseStack, this.width / 2 - IMAGE_SIZE / 2, this.height / 2 - IMAGE_SIZE / 2 + 6, uOffset, 1.0F, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE, IMAGE_SIZE);
         RenderSystem.disableBlend();
 
-        drawCenteredString(poseStack, this.font, this.TITLE, this.width / 2, 8, 16777215);
+        drawCenteredString(poseStack, this.font, getTitle(), this.width / 2, 8, 16777215);
         drawCenteredString(poseStack, this.font, this.subtitle, this.width / 2, 24, 16777215);
         drawCenteredString(poseStack, this.font, this.countdown, this.width / 2, 34, 16777215);
     }
