@@ -12,7 +12,7 @@ import lombok.Setter;
 import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -38,7 +38,7 @@ public class BridgeConnectionScreen extends Screen {
     private boolean hasStartedConnection = false;
 
     public BridgeConnectionScreen(Screen lastScreen, BridgeEntry connectingBridgeEntry) {
-        super(new TextComponent("Connect to the Bridge"));
+        super(Component.literal("Connect to the Bridge"));
         this.lastScreen = lastScreen;
         this.connectingBridgeEntry = connectingBridgeEntry;
         this.connectingBridge = connectingBridgeEntry.getBridge();
@@ -48,14 +48,14 @@ public class BridgeConnectionScreen extends Screen {
         assert this.minecraft != null;
         super.init();
 
-        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 150, 20, new TextComponent("Try Again"), (button) -> {
+        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 150, 20, Component.literal("Try Again"), (button) -> {
             setSubtitle("Press the bridge button.");
             startConnection();
         }));
 
         tryAgainButton.active = false;
 
-        backButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 150, 20, new TextComponent("Back"), (button) -> {
+        backButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 150, 20, Component.literal("Back"), (button) -> {
             McHue.BRIDGE_MANAGER.cancelConnection();
             this.minecraft.setScreen(lastScreen);
         }));
@@ -116,7 +116,7 @@ public class BridgeConnectionScreen extends Screen {
 
                 currentDecoration = CHECKMARK;
                 McHue.activeBridge = connectingBridge;
-                backButton.setMessage(new TextComponent("Done"));
+                backButton.setMessage(Component.literal("Done"));
 
                 McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, connectingBridge.getBridgeId());
                 McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, connectingBridge.getBridgeIp());

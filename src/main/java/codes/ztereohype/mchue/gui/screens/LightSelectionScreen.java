@@ -12,7 +12,7 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 
 @Environment(value = EnvType.CLIENT)
@@ -48,14 +48,14 @@ public class LightSelectionScreen extends Screen {
                 this.height - 28,
                 72,
                 20,
-                new TextComponent("Scan Bridges"),
+                Component.literal("Scan Bridges"),
                 button -> this.rebuildBridgeList(false)));
 
         this.addRenderableWidget(new Button(this.width / 2 - 76,
                 this.height - 28,
                 72,
                 20,
-                new TextComponent("Connect"),
+                Component.literal("Connect"),
                 button -> connectBridge()) {
 
             @Override
@@ -69,7 +69,7 @@ public class LightSelectionScreen extends Screen {
                 this.height - 28,
                 72,
                 20,
-                new TextComponent("Disconnect"),
+                Component.literal("Disconnect"),
                 button -> disconnectBridge()) {
 
             @Override
@@ -83,7 +83,7 @@ public class LightSelectionScreen extends Screen {
                 this.height - 28,
                 72,
                 20,
-                new TextComponent("Done"),
+                Component.literal("Done"),
                 (button) -> this.minecraft.setScreen(lastScreen)));
 
         this.rebuildBridgeList(true);

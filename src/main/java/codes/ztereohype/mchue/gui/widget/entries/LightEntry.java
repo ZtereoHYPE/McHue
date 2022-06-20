@@ -13,7 +13,7 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +47,7 @@ public class LightEntry extends ObjectSelectionList.Entry<LightEntry> {
 
         // title
         Font font = this.minecraft.font;
-        Component name = new TextComponent(light.getName());
+        Component name = Component.literal(light.getName());
         this.minecraft.font.draw(poseStack, Language.getInstance()
                                                     .getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
 

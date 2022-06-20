@@ -10,7 +10,7 @@ import lombok.Getter;
 import net.fabricmc.api.ClientModInitializer;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.toasts.SystemToast;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -79,7 +79,7 @@ public class McHue implements ClientModInitializer {
         if (toastTitle == null) return;
 //        Minecraft.getInstance().
         Minecraft.getInstance().getToasts()
-                 .addToast(new SystemToast(SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE, new TextComponent(toastTitle), new TextComponent("Go to the McHue settings.")));
+                 .addToast(new SystemToast(SystemToast.SystemToastIds.WORLD_ACCESS_FAILURE, Component.literal(toastTitle), Component.literal("Go to the McHue settings.")));
     }
 
     public boolean isEntertainmentMode() {

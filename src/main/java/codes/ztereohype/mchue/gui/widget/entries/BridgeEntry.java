@@ -13,7 +13,6 @@ import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.components.ObjectSelectionList;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +31,7 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
     @Override
     public Component getNarration() {
         //todo: proper accessibility
-        return new TextComponent("Bridge");
+        return Component.literal("Bridge");
     }
 
     @Override
@@ -48,7 +47,7 @@ public class BridgeEntry extends ObjectSelectionList.Entry<BridgeEntry> {
 
         // title
         Font font = this.minecraft.font;
-        Component name = new TextComponent("Bridge " + (index + 1));
+        Component name = Component.literal("Bridge " + (index + 1));
         this.minecraft.font.draw(poseStack, Language.getInstance()
                                                     .getVisualOrder(name), x + 3 + ICON_SIZE, y + 1, 0xFFFFFF);
 

@@ -43,7 +43,8 @@ public class HueLight {
         int transitionTime = 5; //todo: unhardcode transition time (load from config)
 
         //todo: dont send the on attribute if already on.
-        String body = "{\"on\":" + colour.isPowered() + ", \"sat\":" + (int) (colour.getSaturation() * 255) + ", \"bri\":" + (int) (colour.getBrightness() * 254) + ", \"hue\":" + (int) (colour.getHue() / 360D * 255 * 256) + ", \"transitiontime\": " + transitionTime + " }";
+        String body = "{\"on\":" + colour.isPowered() + ", \"sat\":" + (int) (colour.getSaturation() * 255) + ", \"bri\":" + (int) (colour.getBrightness() * 254) + ", \"hue\":" + (int) (colour.getHue() / 360D * 255 * 256) + ", \"transitiontime\":" + transitionTime + "}";
+        System.out.println(body);
         return NetworkUtil.putJson(POST_ENDPOINT, body);
     }
 

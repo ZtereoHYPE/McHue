@@ -3,9 +3,10 @@ package codes.ztereohype.mchue.util;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.Minecraft;
 import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.FormattedText;
 import net.minecraft.network.chat.Style;
-import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.util.FormattedCharSequence;
 
 import java.util.List;
@@ -16,7 +17,7 @@ public class DrawingUtil {
             string = string.substring(0, string.length() - 1);
         }
         List<FormattedText> strings = minecraft.font.getSplitter()
-                                                    .splitLines(new TextComponent(string), wrapWidth, Style.EMPTY);
+                                                    .splitLines(Component.literal(string), wrapWidth, Style.EMPTY);
         for (int i = 0; i < strings.size(); i++) {
             FormattedText renderable = strings.get(i);
             FormattedCharSequence line = Language.getInstance().getVisualOrder(renderable);

@@ -98,8 +98,6 @@ public class ColourGrabber {
     }
 
     public LightState getLightMultiplier() {
-        Level clientLevel = this.minecraft.level;
-        BlockPos playerLocation = getPlayerLocation();
         int skyLight = 0;
         int blockLight = 0;
         for (int light : skyLights) {
@@ -108,13 +106,15 @@ public class ColourGrabber {
         for (int light : blockLights) {
             blockLight += light;
         }
-        skyLight /= skyLights.size();
-        blockLight /= blockLights.size();
+
+        skyLight /= Math.max(1, skyLights.size());
+        blockLight /= Math.max(1, blockLights.size());
 
         NativeImage lightPixels = ((LightTextureAccessor) minecraft.gameRenderer.lightTexture()).getLightPixels();
 
         // abgr -> rgb
-        int bgr = lightPixels.getPixelRGBA(blockLight, skyLight) & 0x00FFFFFF;
+        int pixelRGBA = lightPixels.getPixelRGBA(skyLight, blockLight);
+        int bgr = pixelRGBA & 0x00FFFFFF;
         int b = (bgr >> 16) & 0xFF;
         int g = (bgr >> 8) & 0xFF;
         int r = bgr & 0xFF;
@@ -152,6 +152,9 @@ public class ColourGrabber {
     }
 
     private float checkCave() {
+        blockLights.clear();
+        skyLights.clear();
+
         int hits = 0;
 
         for (Vec3 caveCheckVector : caveCheckVectors) {
@@ -170,7 +173,7 @@ public class ColourGrabber {
                 }
                 if (blockLight == 0) {
                     for (Direction direction : Direction.values()) {
-                        blockLight = Math.max(skyLight, level.getBrightness(LightLayer.BLOCK, hitResult.getBlockPos().relative(direction)));
+                        blockLight = Math.max(blockLight, level.getBrightness(LightLayer.BLOCK, hitResult.getBlockPos().relative(direction)));
                     }
                 }
 
