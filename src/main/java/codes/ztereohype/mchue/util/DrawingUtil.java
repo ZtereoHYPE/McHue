@@ -27,22 +27,4 @@ public class DrawingUtil {
             minecraft.font.draw(poseStack, line, x, y + i * minecraft.font.lineHeight, color);
         }
     }
-
-    public static void renderLightmapDebug(PoseStack poseStack) {
-        Minecraft mc = Minecraft.getInstance();
-
-        NativeImage lightPixels = ((LightTextureAccessor) mc.gameRenderer.lightTexture()).getLightPixels();
-        for (int x = 0; x < lightPixels.getWidth(); x++) {
-            for (int y = 0; y < lightPixels.getHeight(); y++) {
-                int colour = lightPixels.getPixelRGBA(x, y);
-
-                int pixelSize = 6;
-
-                int xCoord = mc.getWindow().getGuiScaledWidth() - (x * pixelSize);
-                int yCoord = mc.getWindow().getGuiScaledHeight() - (y * pixelSize);
-
-                GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + pixelSize, yCoord + pixelSize, colour);
-            }
-        }
-    }
 }

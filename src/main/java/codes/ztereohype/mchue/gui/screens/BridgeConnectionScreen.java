@@ -3,7 +3,7 @@ package codes.ztereohype.mchue.gui.screens;
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.HueBridge;
-import codes.ztereohype.mchue.devices.interfaces.BridgeConnectionUpdate;
+import codes.ztereohype.mchue.devices.interfaces.BridgeConnectionHandler;
 import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.systems.RenderSystem;
@@ -48,14 +48,14 @@ public class BridgeConnectionScreen extends Screen {
         assert this.minecraft != null;
         super.init();
 
-        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 150, 20, Component.literal("Try Again"), (button) -> {
+        tryAgainButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 150, 20, Component.literal("Try Again"), (button) -> {
             setSubtitle("Press the bridge button.");
             startConnection();
         }));
 
         tryAgainButton.active = false;
 
-        backButton = this.addRenderableWidget(new Button(this.width / 2 - 154, this.height - 28, 150, 20, Component.literal("Back"), (button) -> {
+        backButton = this.addRenderableWidget(new Button(this.width / 2 + 4, this.height - 28, 150, 20, Component.literal("Back"), (button) -> {
             McHue.BRIDGE_MANAGER.cancelConnection();
             this.minecraft.setScreen(lastScreen);
         }));
@@ -102,44 +102,50 @@ public class BridgeConnectionScreen extends Screen {
 
     private void startConnection() {
         currentDecoration = ARROW;
-        McHue.BRIDGE_MANAGER.completeBridge(connectingBridge, this::connectionUpdate);
+        McHue.BRIDGE_MANAGER.completeBridge(connectingBridge, new ScreenConnectionHandler());
     }
 
-    private void connectionUpdate(BridgeConnectionUpdate updateInfo) {
-        switch (updateInfo.response()) {
-            case SUCCESS -> {
-                // this should be an unreachable state
-                if (!connectingBridge.isComplete()) Blaze3D.youJustLostTheGame();
+    private class ScreenConnectionHandler implements BridgeConnectionHandler {
+        @Override
+        public void success(String username) {
+            // this should be an unreachable state
+            if (!connectingBridge.isComplete()) Blaze3D.youJustLostTheGame();
 
-                setSubtitle("Connection completed with Success!");
-                setCountdown("You may go back to the previous screen.");
+            setSubtitle("Connection completed with Success!");
+            setCountdown("You may go back to the previous screen.");
 
-                currentDecoration = CHECKMARK;
-                McHue.activeBridge = connectingBridge;
-                backButton.setMessage(Component.literal("Done"));
+            currentDecoration = CHECKMARK;
+            McHue.activeBridge = connectingBridge;
+            backButton.setMessage(Component.literal("Done"));
 
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, connectingBridge.getBridgeId());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, connectingBridge.getBridgeIp());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, connectingBridge.getDeviceId());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, connectingBridge.getUsername());
-                McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, connectingBridge.getClientKey());
-            }
-            case PRESS_BUTTON -> setCountdown(updateInfo.timeLeft() + "s remaining...");
+            McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_ID, connectingBridge.getBridgeId());
+            McHue.BRIDGE_DATA.setProperty(BridgeProperties.BRIDGE_IP, connectingBridge.getBridgeIp());
+            McHue.BRIDGE_DATA.setProperty(BridgeProperties.DEVICE_INDENTIFIER, connectingBridge.getDeviceId());
+            McHue.BRIDGE_DATA.setProperty(BridgeProperties.USERNAME, connectingBridge.getUsername());
+            McHue.BRIDGE_DATA.setProperty(BridgeProperties.CLIENT_KEY, connectingBridge.getClientKey());
+        }
 
-            case TIME_UP -> {
-                setSubtitle("The button was not pressed in 60 seconds.");
-                setCountdown("You can press Try Again to... try again.");
+        @Override
+        public void pressButton(int timeLeft) {
+            setCountdown(timeLeft + "s remaining...");
+        }
 
-                currentDecoration = CROSS;
-                tryAgainButton.active = true;
-            }
-            case FAILURE -> {
-                setSubtitle(updateInfo.errorMessage());
-                setCountdown("");
+        @Override
+        public void timeUp() {
+            setSubtitle("The button was not pressed in 60 seconds.");
+            setCountdown("You can press Try Again to... try again.");
 
-                currentDecoration = CROSS;
-                tryAgainButton.active = true;
-            }
+            currentDecoration = CROSS;
+            tryAgainButton.active = true;
+        }
+
+        @Override
+        public void failure(String errorMessage) {
+            setSubtitle(errorMessage);
+            setCountdown("");
+
+            currentDecoration = CROSS;
+            tryAgainButton.active = true;
         }
     }
 }
