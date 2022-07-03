@@ -12,8 +12,9 @@ import net.fabricmc.api.Environment;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 @Environment(value = EnvType.CLIENT)
 public class LightSelectionScreen extends Screen {
@@ -56,7 +57,7 @@ public class LightSelectionScreen extends Screen {
                 72,
                 20,
                 Component.literal("Connect"),
-                button -> connectBridge()) {
+                button -> connectSelectedBridgeEntry()) {
 
             @Override
             public void renderButton(@NotNull PoseStack poseStack, int mouseX, int mouseY, float partialTick) {
@@ -115,18 +116,21 @@ public class LightSelectionScreen extends Screen {
         lightSelectionList.setSelectedBridge(null);
 
         for (HueBridge bridge : BridgeManager.getLocalBridges(useCache)) {
-            BridgeEntry entry = new BridgeEntry(bridge, this);
-            bridgeSelectionList.children().add(entry);
-
-            if (McHue.activeBridge != null && bridge.getBridgeId().equals(McHue.activeBridge.getBridgeId())) {
-                McHue.BRIDGE_MANAGER.completeBridge(bridge);
+            BridgeEntry entry;
+            if (McHue.activeBridge != null && Objects.equals(bridge.getBridgeId(), McHue.activeBridge.getBridgeId())) {
+                entry = new BridgeEntry(McHue.activeBridge, this);
                 setSelectedBridgeEntry(entry);
-                connectBridge();
+                connectSelectedBridgeEntry();
+            } else {
+                entry = new BridgeEntry(bridge, this);
             }
+
+            setSelectedBridgeEntry(entry);
+            bridgeSelectionList.children().add(entry);
         }
     }
 
-    private void connectBridge() {
+    private void connectSelectedBridgeEntry() {
         //todo: so if the bridge failed connecting to the lights we are reconnecting from the ground up??? what the shit was I thinking this is spaghetti hell
         if (selectedBridgeEntry.getBridge().isComplete()) {
             McHue.activeBridge = selectedBridgeEntry.getBridge();
@@ -140,7 +144,6 @@ public class LightSelectionScreen extends Screen {
 
     private void disconnectBridge() {
         //todo: find a way to unify all of this stuff im sick and tired of losing it all around
-        // also, this is broken and doesnt work
         selectedBridgeEntry.setConnected(false);
         setSelectedBridgeEntry(null);
         McHue.activeBridge = null;

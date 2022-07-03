@@ -2,6 +2,7 @@ package codes.ztereohype.mchue;
 
 import codes.ztereohype.mchue.devices.HueLight;
 import codes.ztereohype.mchue.devices.interfaces.LightState;
+import codes.ztereohype.mchue.mixin.ui.MixinDebug;
 import org.apache.logging.log4j.Level;
 
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 public class LightColourScheduler {
     private static final Map<HueLight, LightState> previousColours = new HashMap<>();
     private static ScheduledExecutorService scheduler;
-    private static ColourGrabber cg;
+    public static ColourGrabber cg;
 
     private static void updateColour() {
         LightState colour;
@@ -26,13 +27,15 @@ public class LightColourScheduler {
             return;
         }
         McHue.activeBridge.streamColour(colour);
+        McHue.ld.setLightColour(colour);
     }
 
     public static void startUpdater() {
         if (McHue.activeBridge == null) return;
 
-        for (HueLight activeLight : McHue.activeBridge.getActiveLights()) {
-            previousColours.put(activeLight, activeLight.getState());
+        for (String lightId : McHue.activeBridge.getActiveLights()) {
+            HueLight light = McHue.activeBridge.bridgeLights.get(lightId);
+            previousColours.put(light, light.getState());
         }
 
         cg = new ColourGrabber();

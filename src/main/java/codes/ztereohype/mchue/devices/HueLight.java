@@ -3,23 +3,20 @@ package codes.ztereohype.mchue.devices;
 import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
-import lombok.Setter;
 import net.shadew.json.JsonNode;
 import net.shadew.json.JsonPath;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Optional;
 
-
 // this class will represent a single light that will accept various controls
 public class HueLight {
     //todo change to a getter system
     private final @Getter String id;
-    private final @Getter String index;
+    private final @Getter int index;
     private final @Getter String name;
     private final String POST_ENDPOINT;
     private final String GET_ENDPOINT;
-    private @Getter @Setter boolean active = false;
 
     private LightState lastState;
 
@@ -28,7 +25,7 @@ public class HueLight {
     private static final JsonPath HUE_PATH = JsonPath.parse("state.hue");
     private static final JsonPath SAT_PATH = JsonPath.parse("state.sat");
 
-    public HueLight(String id, String index, String name, HueBridge parentBridge) {
+    public HueLight(String id, int index, String name, HueBridge parentBridge) {
         this.id = id;
         this.index = index;
         this.name = name;

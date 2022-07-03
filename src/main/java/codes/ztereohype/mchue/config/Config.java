@@ -3,6 +3,7 @@ package codes.ztereohype.mchue.config;
 import codes.ztereohype.mchue.McHue;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.logging.log4j.Level;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,20 +82,29 @@ public class Config {
         save();
     }
 
+    @Nullable
     public <T extends Enum<T> & PropertiesEnum> String getProperty(T propertiesEnum) {
         // use the getPropertyArray pls
-        if (propertiesEnum.isArray()) return "null";
+        if (propertiesEnum.isArray()) McHue.LOGGER.error("you fucking idiot you are using the normal getter for arrays");
 
         String key = propertiesEnum.getSettingName();
-        return properties.containsKey(key) ? properties.getProperty(key) : defaultProperties.get(key);
+
+        if (!properties.containsKey(key)) return defaultProperties.get(key);
+
+        if (properties.getProperty(key).equals("null")) return null;
+
+        return properties.getProperty(key);
     }
 
+    @Nullable
     public <T extends Enum<T> & PropertiesEnum> String[] getPropertyArray(T propertiesEnum) {
         // use the getProperty pls
-        if (!propertiesEnum.isArray()) return new String[]{};
+        if (!propertiesEnum.isArray()) McHue.LOGGER.error("you fucking idiot you are using the array getter for normal values");
 
         String key = propertiesEnum.getSettingName();
         String mergedProps = properties.containsKey(key) ? properties.getProperty(key) : defaultProperties.get(key);
+
+        if (mergedProps.equals("null")) return null;
 
         return mergedProps.split(",", 0);
     }

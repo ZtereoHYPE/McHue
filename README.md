@@ -6,6 +6,7 @@ This is still heavily work in progress and the lights might not match the surrou
 Many things are also hardcoded as an interface to configure them is not ready yet, but work is being made in my free time.
 
 ## [notepad for the developer]:
+- https://openrgb.org/
 - based on biome
 - based on lighting conditions
 - CAVE DETECTION

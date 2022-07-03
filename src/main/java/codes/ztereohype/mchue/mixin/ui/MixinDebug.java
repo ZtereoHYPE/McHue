@@ -1,6 +1,6 @@
 package codes.ztereohype.mchue.mixin.ui;
 
-import codes.ztereohype.mchue.util.DrawingUtil;
+import codes.ztereohype.mchue.McHue;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.components.DebugScreenOverlay;
 import org.spongepowered.asm.mixin.Mixin;
@@ -12,6 +12,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MixinDebug {
     @Inject(method = "render(Lcom/mojang/blaze3d/vertex/PoseStack;)V", at = @At("HEAD"))
     private void injectRender(PoseStack poseStack, CallbackInfo ci) {
-        DrawingUtil.renderLightmapDebug(poseStack);
+        McHue.ld.render(poseStack);
     }
 }
