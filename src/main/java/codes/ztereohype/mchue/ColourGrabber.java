@@ -5,7 +5,6 @@ import codes.ztereohype.mchue.mixin.LightTextureAccessor;
 import codes.ztereohype.mchue.util.ColourUtil;
 import com.mojang.blaze3d.platform.NativeImage;
 import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.NonNull;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BiomeColors;
@@ -32,6 +31,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+//todo: this entire thing has to be rewritten to be flexible
 public class ColourGrabber {
     private final Minecraft minecraft = Minecraft.getInstance();
     private final Level level = Minecraft.getInstance().level;
@@ -42,10 +42,26 @@ public class ColourGrabber {
     private final TagKey<Block> CAVE_TAG = TagKey.create(Registry.BLOCK_REGISTRY, new ResourceLocation("mchue", "cave_blocks"));
     private final Vec3[] caveCheckVectors;
 
-
-    //trash
     private final List<Integer> skyLights = new IntArrayList();
     private final List<Integer> blockLights = new IntArrayList();
+
+    public int getSkyLight() {
+        int skyLight = 0;
+        for (int light : skyLights) {
+            skyLight += light;
+        }
+
+        return skyLight / Math.max(1, skyLights.size());
+    }
+
+    public int getBLockLight() {
+        int blockLight = 0;
+        for (int light : blockLights) {
+            blockLight += light;
+        }
+
+        return blockLight / Math.max(1, blockLights.size());
+    }
 
     public ColourGrabber() {
         this.caveCheckVectors = getFibSphereVectors(75, false);
@@ -98,22 +114,10 @@ public class ColourGrabber {
     }
 
     public LightState getLightMultiplier() {
-        int skyLight = 0;
-        int blockLight = 0;
-        for (int light : skyLights) {
-            skyLight += light;
-        }
-        for (int light : blockLights) {
-            blockLight += light;
-        }
-
-        skyLight /= Math.max(1, skyLights.size());
-        blockLight /= Math.max(1, blockLights.size());
-
         NativeImage lightPixels = ((LightTextureAccessor) minecraft.gameRenderer.lightTexture()).getLightPixels();
 
         // abgr -> rgb
-        int pixelRGBA = lightPixels.getPixelRGBA(skyLight, blockLight);
+        int pixelRGBA = lightPixels.getPixelRGBA(getBLockLight(), getSkyLight());
         int bgr = pixelRGBA & 0x00FFFFFF;
         int b = (bgr >> 16) & 0xFF;
         int g = (bgr >> 8) & 0xFF;
