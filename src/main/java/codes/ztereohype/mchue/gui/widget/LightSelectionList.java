@@ -19,11 +19,9 @@ import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.Optional;
-
 public class LightSelectionList extends ObjectSelectionList<LightEntry> {
+    private static final LightState BLINK_COLOUR = new LightState(32, 255, 128, true);
     private final LightSelectionScreen parent;
-    private final LightState blinkColour = new LightState(32, 255, 128, true);
     private HueBridge selectedBridge;
 
     private @Setter String emptyMessage = "Select a bridge to view its lights.";
@@ -38,24 +36,27 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
     @Override
     public void setSelected(LightEntry entry) {
         if (entry == null) return; // ???
-        boolean selected = !selectedBridge.getActiveLights().contains(entry.getLight());
+
+        boolean selected = !selectedBridge.getActiveLights().contains(entry.getLight().getId());
+
         if (selected) {
             LightState previousColour = entry.getLight().getState();
-            entry.getLight().setColour(blinkColour);
+            entry.getLight().setColour(BLINK_COLOUR);
             entry.getLight().setColour(previousColour);
         }
 
         selectedBridge.setActiveLight(entry.getLight().getId(), selected);
+
+        String[] lightIds = selectedBridge.getActiveLights().toArray(String[]::new);
+
+        McHue.BRIDGE_DATA.setPropertyArray(BridgeProperties.CONNECTED_LIGHTS, lightIds);
     }
 
     @Override
     public boolean isSelectedItem(int index) {
-        Optional<HueLight> entry = selectedBridge.getActiveLights().stream()
-                                                 .filter(l -> l.getId().equals(this.children()
-                                                                                   .get(index)
-                                                                                   .getLight().getId()))
-                                                 .findFirst();
-        return entry.isPresent();
+        String lightId = this.children().get(index).getLight().getId();
+
+        return selectedBridge.getActiveLights().contains(lightId);
     }
 
     @Override
@@ -333,14 +334,14 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
             return;
         }
 
-        if (!bridge.scanLights()) {
+        if (!bridge.locateLights()) {
             emptyMessage = "There was a problem connecting...";
             return;
         }
 
         emptyMessage = "";
         this.clearEntries();
-        for (HueLight light : bridge.connectedLights) {
+        for (HueLight light : bridge.bridgeLights.values()) {
             LightEntry entry = new LightEntry(light, this);
             this.addEntry(entry);
         }
@@ -353,10 +354,6 @@ public class LightSelectionList extends ObjectSelectionList<LightEntry> {
             if (entry != null) {
                 if (entry.mouseClicked(mouseX, mouseY, button)) {
                     this.setSelected(entry);
-
-                    String[] lightIds = selectedBridge.getActiveLights().stream().parallel().map(HueLight::getId)
-                                                      .toArray(String[]::new);
-                    McHue.BRIDGE_DATA.setPropertyArray(BridgeProperties.CONNECTED_LIGHTS, lightIds);
 
                     return true;
                 }
