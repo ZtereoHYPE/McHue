@@ -1,6 +1,7 @@
 plugins {
 	id 'fabric-loom' version '0.12-SNAPSHOT'
 	id 'io.github.juuxel.loom-quiltflower' version '1.7.1'
+	id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -24,6 +25,19 @@ repositories {
 	}
 }
 
+tasks.build.dependsOn(tasks.findByName("shadowJar"))
+
+configurations {
+	shadow
+	implementation.extendsFrom(shadow)
+}
+
+shadowJar {
+	configurations = [project.configurations.shadow]
+	relocate 'org.xbill.mDNS', "${project.group}.shadow.org.xbill.mDNS"
+	relocate 'net.shadew.json', "${project.group}.shadow.net.shadew.json"
+}
+
 dependencies {
 	// essentials & mappings
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -37,8 +51,8 @@ dependencies {
 	}
 
 	// apis
-	modImplementation(include(fabricApi.module("fabric-api-base", project.fabric_version)))
-	modImplementation(include(fabricApi.module("fabric-resource-loader-v0", project.fabric_version)))
+	modImplementation include(fabricApi.module("fabric-api-base", project.fabric_version))
+	modImplementation include(fabricApi.module("fabric-resource-loader-v0", project.fabric_version))
 	modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
 
 	// devenv mods
@@ -50,14 +64,28 @@ dependencies {
 	}
 	modRuntimeOnly(include(fabricApi.module("fabric-screen-api-v1", project.fabric_version)))
 
-	// libraries
-	include "net.shadew:json:0.3.1"
+	// librarieS
+	shadow "net.shadew:json:0.3.1"
 	implementation "net.shadew:json:0.3.1"
-	include "com.github.posicks:mdnsjava:mdnsjava_2.1.5"
+	shadow "com.github.posicks:mdnsjava:mdnsjava_2.1.5"
 	implementation "com.github.posicks:mdnsjava:mdnsjava_2.1.5"
 
 	compileOnly 'org.projectlombok:lombok:1.18.24'
 	annotationProcessor 'org.projectlombok:lombok:1.18.24'
+
+	// test
+	testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.2'
+	testImplementation 'org.junit.jupiter:junit-jupiter-params:5.8.2'
+	testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.2'
+}
+
+test {
+	useJUnitPlatform()
+
+	// Show test results.
+	testLogging {
+		events "passed", "skipped", "failed"
+	}
 }
 
 processResources {
@@ -71,6 +99,10 @@ processResources {
 tasks.withType(JavaCompile).configureEach { it.options.release = 17 }
 
 java { withSourcesJar() }
+
+remapJar {
+	input.set shadowJar.archiveFile
+}
 
 jar {
 	from("LICENSE") {
