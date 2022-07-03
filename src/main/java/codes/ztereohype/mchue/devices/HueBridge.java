@@ -1,89 +1,90 @@
 package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.McHue;
-import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.interfaces.LightState;
 import codes.ztereohype.mchue.util.NetworkUtil;
 import lombok.Getter;
+import lombok.Setter;
 import net.shadew.json.JsonNode;
 import net.shadew.json.JsonPath;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class HueBridge {
     private final @Getter String bridgeId;
     private final @Getter String bridgeIp;
-    public List<HueLight> connectedLights = new ArrayList<>();
-    private @Getter String deviceId;
-    private @Getter String username;
-    private @Getter String clientKey;
+    public final HashMap<String, HueLight> bridgeLights = new HashMap<>();
+    public final Set<String> activeLightIDs = new HashSet<>();
+    private @Setter @Getter String deviceId;
+    private @Setter @Getter String username;
+    private @Setter @Getter String clientKey;
 
-    private final JsonPath NAME_PATH = JsonPath.parse("name");
-    private final JsonPath ID_PATH = JsonPath.parse("uniqueid");
+    private static final JsonPath LIGHT_NAME_PATH = JsonPath.parse("name");
+    private static final JsonPath LIGHT_ID_PATH = JsonPath.parse("uniqueid");
 
     public HueBridge(String id, String ip) {
         this.bridgeId = id;
         this.bridgeIp = ip;
     }
 
-    public void setDeviceId(String deviceId) {
+    public HueBridge(String id, String ip, String deviceId, String username, String clientKey) {
+        this.bridgeId = id;
+        this.bridgeIp = ip;
         this.deviceId = deviceId;
-    }
-
-    public void setUsername(String username) {
         this.username = username;
-    }
-
-    public void setClientKey(String clientKey) {
         this.clientKey = clientKey;
+        locateLights();
     }
 
     public boolean isComplete() {
-        return username != null && deviceId != null && bridgeIp != null && bridgeId != null;
+        return username != null && deviceId != null && bridgeIp != null && bridgeId != null && clientKey != null;
     }
 
-    public boolean scanLights() {
+    public boolean locateLights() {
         if (!isComplete()) return false;
-        String endpoint = "http://" + getBridgeIp() + "/api/" + username + "/lights";
+        String endpoint = "http://" + getBridgeIp() + "/api/" + getUsername() + "/lights";
         Optional<JsonNode> response = NetworkUtil.getJson(endpoint);
 
         if (response.isEmpty()) {
             return false;
         }
 
-        connectedLights.clear();
+        bridgeLights.clear();
 
-        for (String lightKey : response.get().keySet()) {
-            JsonNode lightJson = response.get().get(lightKey);
-            String id = lightJson.query(ID_PATH).asString();
-            String name = lightJson.query(NAME_PATH)
-                                   .asString(); //node: maybe append model or room? or add it in the class?
-            HueLight light = new HueLight(id, lightKey, name, this);
+        for (String lightIndex : response.get().keySet()) {
+            JsonNode lightJson = response.get().get(lightIndex);
 
-            if (Arrays.asList(McHue.BRIDGE_DATA.getPropertyArray(BridgeProperties.CONNECTED_LIGHTS)).contains(id)) {
-                light.setActive(true);
-            }
+            String id = lightJson.query(LIGHT_ID_PATH).asString();
+            String name = lightJson.query(LIGHT_NAME_PATH).asString(); //node: maybe append model or room? or add it in the class?
 
-            connectedLights.add(light);
+            HueLight light = new HueLight(id, Integer.parseInt(lightIndex), name, this);
+            bridgeLights.put(id, light);
         }
         return true;
     }
 
     public void setActiveLight(String lightId, boolean active) {
-        Optional<HueLight> light = connectedLights.stream().filter(l -> l.getId().equals(lightId)).findFirst();
-        if (light.isEmpty()) return;
+        if (!bridgeLights.containsKey(lightId)) {
+            McHue.LOGGER.error("Light with id " + lightId + " not found in bridge.");
+            return;
+        }
 
-        light.get().setActive(active);
+        if (active) {
+            activeLightIDs.add(lightId);
+        } else {
+            activeLightIDs.remove(lightId);
+        }
     }
 
-    public Set<HueLight> getActiveLights() {
-        return connectedLights.stream().filter(l -> l.isActive()).collect(Collectors.toSet());
+    public Set<String> getActiveLights() {
+        return activeLightIDs;
     }
 
     //todo: make this have 2 branches: V1 and V2 (that uses the streaming api) (can both be used at the same time maybe??)
     public void streamColour(LightState colour) {
-        for (HueLight light : connectedLights.stream().filter(HueLight::isActive).toArray(HueLight[]::new)) {
+        colour.applyGammaCorrection();
+        for (String lightID : activeLightIDs) {
+            HueLight light = bridgeLights.get(lightID);
             light.setColour(colour);
         }
     }

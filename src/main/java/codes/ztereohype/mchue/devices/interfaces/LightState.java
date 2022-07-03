@@ -6,9 +6,9 @@ import lombok.Setter;
 import java.util.Objects;
 
 public final class LightState {
-    private final double r;
-    private final double g;
-    private final double b;
+    private double r;
+    private double g;
+    private double b;
     public @Getter @Setter boolean powered;
 
     private boolean isGammaCorrected = false;
@@ -54,12 +54,12 @@ public final class LightState {
     }
 
     /**
-     * @param hue the hue value between 0 and 360.
+     * @param hue the hue value between 0 and 359.
      * @param sat the saturation value between 0 and 1.
      * @param val the value between 0 and 1.
      */
     public LightState(float hue, float sat, float val, boolean powered) {
-        if (hue < 0 || hue > 360 || sat < 0 || sat > 1 || val < 0 || val > 1) {
+        if (hue < 0 || hue > 359 || sat < 0 || sat > 1 || val < 0 || val > 1) {
             throw new IllegalArgumentException("The hue, saturation, or value are not between in their correct ranges");
         }
 
@@ -121,50 +121,40 @@ public final class LightState {
      * This has been taken from the
      * <a href="https://developers.meethue.com/develop/application-design-guidance/color-conversion-formulas-rgb-to-xy-and-back/">Philips Hue API Developer Guide</a>
      */
-    private double[] getGammaCorrected() {
-        if (this.isGammaCorrected) {
-            return new double[]{r, g, b};
-        }
-        double red = (r > 0.04045f) ? Math.pow((r + 0.055f) / (1.0f + 0.055f), 2.4f) : (r / 12.92f);
-        double green = (g > 0.04045f) ? Math.pow((g + 0.055f) / (1.0f + 0.055f), 2.4f) : (g / 12.92f);
-        double blue = (b > 0.04045f) ? Math.pow((b + 0.055f) / (1.0f + 0.055f), 2.4f) : (b / 12.92f);
-        return new double[]{red, green, blue};
+    public void applyGammaCorrection() {
+        if (this.isGammaCorrected) return;
+        this.r = (r > 0.04045f) ? Math.pow((r + 0.055f) / (1.0f + 0.055f), 2.4f) : (r / 12.92f);
+        this.g = (g > 0.04045f) ? Math.pow((g + 0.055f) / (1.0f + 0.055f), 2.4f) : (g / 12.92f);
+        this.b = (b > 0.04045f) ? Math.pow((b + 0.055f) / (1.0f + 0.055f), 2.4f) : (b / 12.92f);
     }
 
     /**
      * @return the brightness value between 0 and 1 with gamma correction
      */
     public double getBrightness() {
-        double[] rgb = getGammaCorrected();
-        return Math.max(Math.max(rgb[0], rgb[1]), rgb[2]);
+        return Math.max(Math.max(this.r, this.g), this.b);
     }
 
     /**
      * @return the hue value between 0 and 360 with gamma correction
      */
     public double getHue() {
-        double[] rgb = getGammaCorrected();
-
-        double red = rgb[0];
-        double green = rgb[1];
-        double blue = rgb[2];
-
-        double min = Math.min(Math.min(red, green), blue);
-        double max = Math.max(Math.max(red, green), blue);
+        double min = Math.min(Math.min(this.r, this.g), this.b);
+        double max = Math.max(Math.max(this.r, this.g), this.b);
 
         double delta = max - min;
 
         if (delta == 0) return 0;
 
         double hue;
-        if (max == red) {
-            hue = (green - blue) / delta;
+        if (max == this.r) {
+            hue = (this.g - this.b) / delta;
 
-        } else if (max == green) {
-            hue = 2D + (blue - red) / delta;
+        } else if (max == this.g) {
+            hue = 2D + (this.b - this.r) / delta;
 
         } else {
-            hue = 4D + (red - green) / delta;
+            hue = 4D + (this.r - this.g) / delta;
         }
 
         hue *= 60;
@@ -177,29 +167,28 @@ public final class LightState {
      * @return the saturation value between 0 and 1 with gamma correction
      */
     public double getSaturation() {
-        double[] rgb = getGammaCorrected();
-        return 1 - (3 / (rgb[0] + rgb[1] + rgb[2])) * Math.min(rgb[0], Math.min(rgb[1], rgb[2]));
+        return 1 - (3 / (this.r + this.g + this.b)) * Math.min(this.r, Math.min(this.g, this.b));
     }
 
     /**
      * @return the red value between 0 and 255
      */
     public int getRedI() {
-        return (int) (r * 255);
+        return (int) Math.round(r * 255);
     }
 
     /**
      * @return the green value between 0 and 255
      */
     public int getGreenI() {
-        return (int) (g * 255);
+        return (int) Math.round(g * 255);
     }
 
     /**
      * @return the blue value between 0 and 255
      */
     public int getBlueI() {
-        return (int) (b * 255);
+        return (int) Math.round(b * 255);
     }
 
     /**
