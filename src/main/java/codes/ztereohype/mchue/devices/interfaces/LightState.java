@@ -117,8 +117,8 @@ public final class LightState {
     }
 
     /**
-     * @return A double array containing the red, green, and blue gamma-corrected values
-     * This has been taken from the
+     * Applies the gamma correction to the r g and b values.
+     * From:
      * <a href="https://developers.meethue.com/develop/application-design-guidance/color-conversion-formulas-rgb-to-xy-and-back/">Philips Hue API Developer Guide</a>
      */
     public void applyGammaCorrection() {
@@ -160,14 +160,17 @@ public final class LightState {
         hue *= 60;
         hue = hue < 0 ? hue + 360 : hue;
 
-        return hue;
+        return Math.round(hue); // round to nearest whole degree?
     }
 
     /**
      * @return the saturation value between 0 and 1 with gamma correction
      */
     public double getSaturation() {
-        return 1 - (3 / (this.r + this.g + this.b)) * Math.min(this.r, Math.min(this.g, this.b));
+        double cmax = Math.max(Math.max(r, g), b);
+        double cmin = Math.min(Math.min(r, g), b);
+
+        return (cmax - cmin) / cmax;
     }
 
     /**
