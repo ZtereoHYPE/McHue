@@ -14,8 +14,8 @@ import net.minecraft.util.FastColor;
 
 @Environment(EnvType.CLIENT)
 public class LightDebugScreen extends GuiComponent {
-    private @Setter LightState lightColour = new LightState(255, 255, 255);
     private final Minecraft mc;
+    private @Setter LightState lightColour = new LightState(255, 255, 255);
 
     public LightDebugScreen(Minecraft mc) {
         this.mc = mc;
@@ -27,6 +27,7 @@ public class LightDebugScreen extends GuiComponent {
     }
 
     public void render(PoseStack poseStack) {
+        if (LightColourScheduler.cg == null) return;
         this.renderLightMap(poseStack, LightColourScheduler.cg.getBLockLight(), LightColourScheduler.cg.getSkyLight());
         this.renderDebugLight(poseStack, lightColour);
     }
@@ -46,18 +47,31 @@ public class LightDebugScreen extends GuiComponent {
                 GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + pixelSize, yCoord + pixelSize, colour);
             }
         }
-        GuiComponent.drawCenteredString(poseStack, mc.font, "x", mc.getWindow().getGuiScaledWidth() - (currentBlockLight * pixelSize) - pixelSize/2, mc.getWindow().getGuiScaledHeight() + (currentSkyLight * pixelSize) - pixelSize/2 - mc.font.lineHeight/2, FastColor.ARGB32.color(255, 255, 0 ,0));
+
+        GuiComponent.drawCenteredString(poseStack,
+                                        mc.font,
+                                        "x",
+                                        mc.getWindow().getGuiScaledWidth() - (currentBlockLight * pixelSize) - pixelSize / 2,
+                                        mc.getWindow().getGuiScaledHeight() - (currentSkyLight * pixelSize) + pixelSize / 2 - mc.font.lineHeight / 2,
+                                        FastColor.ARGB32.color(255, 255, 0, 0));
+
+        GuiComponent.drawCenteredString(poseStack, mc.font,"Sky: " + currentSkyLight, mc.getWindow().getGuiScaledWidth() - (16 * pixelSize) - 20, mc.getWindow().getGuiScaledHeight() - (2 * mc.font.lineHeight), FastColor.ARGB32.color(255, 255, 128, 255));
+        GuiComponent.drawCenteredString(poseStack, mc.font,"Block: " + currentBlockLight, mc.getWindow().getGuiScaledWidth() - (16 * pixelSize) - 20, mc.getWindow().getGuiScaledHeight() - (4 * mc.font.lineHeight), FastColor.ARGB32.color(255, 255, 128, 255));
+
     }
 
     private void renderDebugLight(PoseStack poseStack, LightState colour) {
-        int intcolor = FastColor.ARGB32.color(200, colour.getRedI(), colour.getGreenI(), colour.getBlueI());
+        LightState correctedColor = new LightState(colour.getHue(), colour.getSaturation(), 1F, true);
+        correctedColor.applyGammaCorrection();
+
+        int intcolor = FastColor.ARGB32.color((int) (colour.getBrightness() * 255), correctedColor.getRedI(), correctedColor.getGreenI(), correctedColor.getBlueI());
 
         int guiScaledWidth = mc.getWindow().getGuiScaledWidth();
         int guiScaledHeight = mc.getWindow().getGuiScaledHeight();
 
-        int xCoord = guiScaledWidth/4;
+        int xCoord = guiScaledWidth / 4;
         int yCoord = guiScaledHeight - 20;
 
-        GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + guiScaledWidth/2, yCoord + 20, intcolor);
+        GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + guiScaledWidth / 2, yCoord + 20, intcolor);
     }
 }
