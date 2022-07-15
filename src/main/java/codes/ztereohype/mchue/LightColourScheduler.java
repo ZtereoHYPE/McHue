@@ -26,21 +26,23 @@ public class LightColourScheduler {
             stopUpdater();
             return;
         }
-        McHue.activeBridge.streamColour(colour);
         McHue.ld.setLightColour(colour);
+
+        if (McHue.activeBridge == null) return;
+        McHue.activeBridge.streamColour(colour);
     }
 
     public static void startUpdater() {
+        cg = new ColourGrabber();
+        scheduler = Executors.newScheduledThreadPool(1);
+        scheduler.scheduleAtFixedRate(LightColourScheduler::updateColour, 0, 500, TimeUnit.MILLISECONDS);
+
         if (McHue.activeBridge == null) return;
 
         for (String lightId : McHue.activeBridge.getActiveLights()) {
             HueLight light = McHue.activeBridge.bridgeLights.get(lightId);
             previousColours.put(light, light.getState());
         }
-
-        cg = new ColourGrabber();
-        scheduler = Executors.newScheduledThreadPool(1);
-        scheduler.scheduleAtFixedRate(LightColourScheduler::updateColour, 0, 500, TimeUnit.MILLISECONDS);
     }
 
     public static void stopUpdater() {
