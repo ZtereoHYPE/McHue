@@ -58,18 +58,18 @@ public final class LightState {
      * @param sat the saturation value between 0 and 1.
      * @param val the value between 0 and 1.
      */
-    public LightState(float hue, float sat, float val, boolean powered) {
+    public LightState(double hue, double sat, double val, boolean powered) {
         if (hue < 0 || hue > 359 || sat < 0 || sat > 1 || val < 0 || val > 1) {
             throw new IllegalArgumentException("The hue, saturation, or value are not between in their correct ranges");
         }
 
         this.isGammaCorrected = true;
 
-        float c = val * sat;
-        float x = c * (1 - Math.abs(hue / 60 % 2 - 1));
+        double c = val * sat;
+        double x = c * (1 - Math.abs(hue / 60 % 2 - 1));
         int hueInterval = (int) (hue / 60);
 
-        float ra, ga, ba;
+        double ra, ga, ba;
         switch (hueInterval) {
             case 0 -> {
                 ra = c;
@@ -108,7 +108,7 @@ public final class LightState {
             }
         }
 
-        float m = val - c;
+        double m = val - c;
 
         this.r = ra + m;
         this.g = ga + m;
