@@ -39,12 +39,16 @@ public class LightDebugScreen extends GuiComponent {
         NativeImage lightPixels = ((LightTextureAccessor) mc.gameRenderer.lightTexture()).getLightPixels();
         for (int x = 0; x < lightPixels.getWidth(); x++) {
             for (int y = 0; y < lightPixels.getHeight(); y++) {
-                int colour = lightPixels.getPixelRGBA(x, y);
+                int colour = lightPixels.getPixelRGBA(x, y); // the format is reversed (ABGR)
+
+                int b = colour & 0xFF;
+                int g = colour >> 8 & 0xFF;
+                int r = colour >> 16 & 0xFF;
 
                 int xCoord = mc.getWindow().getGuiScaledWidth() - (x * pixelSize);
                 int yCoord = mc.getWindow().getGuiScaledHeight() - (y * pixelSize);
 
-                GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + pixelSize, yCoord + pixelSize, colour);
+                GuiComponent.fill(poseStack, xCoord, yCoord, xCoord + pixelSize, yCoord + pixelSize, 0xFF000000 | b << 16 | g << 8 | r);
             }
         }
 
@@ -57,7 +61,6 @@ public class LightDebugScreen extends GuiComponent {
 
         GuiComponent.drawCenteredString(poseStack, mc.font,"Sky: " + currentSkyLight, mc.getWindow().getGuiScaledWidth() - (16 * pixelSize) - 20, mc.getWindow().getGuiScaledHeight() - (2 * mc.font.lineHeight), FastColor.ARGB32.color(255, 255, 128, 255));
         GuiComponent.drawCenteredString(poseStack, mc.font,"Block: " + currentBlockLight, mc.getWindow().getGuiScaledWidth() - (16 * pixelSize) - 20, mc.getWindow().getGuiScaledHeight() - (4 * mc.font.lineHeight), FastColor.ARGB32.color(255, 255, 128, 255));
-
     }
 
     private void renderDebugLight(PoseStack poseStack, LightState colour) {
