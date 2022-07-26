@@ -101,11 +101,7 @@ public final class LightState {
                 ga = 0;
                 ba = x;
             }
-            default -> { // else compiler cries
-                ra = 0;
-                ga = 0;
-                ba = 0;
-            }
+            default -> throw new IllegalStateException();
         }
 
         double m = val - c;
