@@ -4,7 +4,7 @@ import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.devices.interfaces.BridgeConnectionHandler;
-import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
+import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
 import com.mojang.blaze3d.Blaze3D;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
@@ -18,7 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class BridgeConnectionScreen extends Screen {
     public final HueBridge connectingBridge;
-    public final BridgeEntry connectingBridgeEntry;
+    public final BridgeSelectionList.BridgeEntry connectingBridgeEntry;
     private final Screen lastScreen;
 
     private static final int IMAGE_SIZE = 192;
@@ -37,7 +37,7 @@ public class BridgeConnectionScreen extends Screen {
 
     private boolean hasStartedConnection = false;
 
-    public BridgeConnectionScreen(Screen lastScreen, BridgeEntry connectingBridgeEntry) {
+    public BridgeConnectionScreen(Screen lastScreen, BridgeSelectionList.BridgeEntry connectingBridgeEntry) {
         super(Component.literal("Connect to the Bridge"));
         this.lastScreen = lastScreen;
         this.connectingBridgeEntry = connectingBridgeEntry;

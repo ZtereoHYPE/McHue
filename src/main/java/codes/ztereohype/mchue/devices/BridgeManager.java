@@ -3,7 +3,7 @@ package codes.ztereohype.mchue.devices;
 import codes.ztereohype.mchue.McHue;
 import codes.ztereohype.mchue.config.BridgeProperties;
 import codes.ztereohype.mchue.devices.interfaces.BridgeConnectionHandler;
-import codes.ztereohype.mchue.util.NetworkUtil;
+import codes.ztereohype.mchue.network.NetworkUtil;
 import lombok.NonNull;
 import net.shadew.json.IncorrectTypeException;
 import net.shadew.json.JsonNode;

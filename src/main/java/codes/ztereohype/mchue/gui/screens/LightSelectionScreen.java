@@ -5,7 +5,6 @@ import codes.ztereohype.mchue.devices.BridgeManager;
 import codes.ztereohype.mchue.devices.HueBridge;
 import codes.ztereohype.mchue.gui.widget.BridgeSelectionList;
 import codes.ztereohype.mchue.gui.widget.LightSelectionList;
-import codes.ztereohype.mchue.gui.widget.entries.BridgeEntry;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -26,7 +25,7 @@ public class LightSelectionScreen extends Screen {
     private BridgeSelectionList bridgeSelectionList;
     private LightSelectionList lightSelectionList;
 
-    private BridgeEntry selectedBridgeEntry;
+    private BridgeSelectionList.BridgeEntry selectedBridgeEntry;
 
     public LightSelectionScreen(Screen lastScreen) {
         super(Component.nullToEmpty("McHue configuration screen"));
@@ -116,13 +115,13 @@ public class LightSelectionScreen extends Screen {
         lightSelectionList.setSelectedBridge(null);
 
         for (HueBridge bridge : BridgeManager.getLocalBridges(useCache)) {
-            BridgeEntry entry;
+            BridgeSelectionList.BridgeEntry entry;
             if (McHue.activeBridge != null && Objects.equals(bridge.getBridgeId(), McHue.activeBridge.getBridgeId())) {
-                entry = new BridgeEntry(McHue.activeBridge, this);
+                entry = new BridgeSelectionList.BridgeEntry(McHue.activeBridge, this);
                 setSelectedBridgeEntry(entry);
                 connectSelectedBridgeEntry();
             } else {
-                entry = new BridgeEntry(bridge, this);
+                entry = new BridgeSelectionList.BridgeEntry(bridge, this);
             }
 
             setSelectedBridgeEntry(entry);
@@ -150,7 +149,7 @@ public class LightSelectionScreen extends Screen {
         this.lightSelectionList.setSelectedBridge(null);
     }
 
-    public void setSelectedBridgeEntry(BridgeEntry entry) {
+    public void setSelectedBridgeEntry(BridgeSelectionList.BridgeEntry entry) {
         this.selectedBridgeEntry = entry;
         this.bridgeSelectionList.setSelected(entry);
     }

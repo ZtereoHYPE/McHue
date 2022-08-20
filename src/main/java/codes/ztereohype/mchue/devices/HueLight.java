@@ -1,7 +1,7 @@
 package codes.ztereohype.mchue.devices;
 
 import codes.ztereohype.mchue.devices.interfaces.LightState;
-import codes.ztereohype.mchue.util.NetworkUtil;
+import codes.ztereohype.mchue.network.NetworkUtil;
 import lombok.Getter;
 import net.shadew.json.JsonNode;
 import net.shadew.json.JsonPath;

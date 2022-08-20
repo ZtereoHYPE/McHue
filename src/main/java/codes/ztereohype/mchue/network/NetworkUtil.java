@@ -1,4 +1,4 @@
-package codes.ztereohype.mchue.util;
+package codes.ztereohype.mchue.network;
 
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import net.shadew.json.Json;
