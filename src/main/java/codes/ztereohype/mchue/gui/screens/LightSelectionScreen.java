@@ -34,7 +34,6 @@ public class LightSelectionScreen extends Screen {
 
     public void init() {
         assert this.minecraft != null;
-        super.init();
 
         bridgeSelectionList = this.addRenderableWidget(new BridgeSelectionList(this.minecraft, 8, this.width / 2 - 5, 50, this.height - 36, 36, this));
         lightSelectionList = this.addRenderableWidget(new LightSelectionList(this.minecraft, this.width / 2 + 5, this.width - 8, 50, this.height - 36, 36, this));
